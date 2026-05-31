@@ -86,7 +86,7 @@ export async function verifyWebhookSignature(
   const signature = req.headers.get("x-hub-signature-256");
   if (!signature) return false;
 
-  const secret = process.env.META_WEBHOOK_VERIFY_TOKEN!;
+  const secret = process.env.META_APP_SECRET!;
   const encoder = new TextEncoder();
   const key = await crypto.subtle.importKey(
     "raw",
