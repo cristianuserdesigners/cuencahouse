@@ -5,7 +5,7 @@ export type ConversationMessage = {
 };
 
 export type LeadQualificationData = {
-  intent: "buy" | "sell" | "rent";
+  intent: "buy" | "sell" | "rent" | "invest";
   property_type: "apartment" | "house" | "land" | "office" | "commercial";
   location_preference: string;
   budget_min: number | null;
@@ -13,6 +13,7 @@ export type LeadQualificationData = {
   urgency: "immediate" | "1_3m" | "3_6m" | "6m_plus";
   segment: "local" | "expat" | "investor" | "b2b";
   language: "es" | "en";
+  client_name?: string | null;
   // Expat-only
   is_remote_purchase?: boolean | null;
   has_residency?: boolean | null;
@@ -29,6 +30,7 @@ export type ConversationState = {
 
 export type QualifierInput = {
   conversationId: string;
+  workspaceId?: string;
   leadId?: string;
   phone?: string;
   channel: "whatsapp" | "web";
@@ -40,6 +42,8 @@ export type QualifierInput = {
 export type QualifierAction =
   | "ask_next"
   | "qualified"
+  | "show_properties"
+  | "schedule_visit"
   | "escalate"
   | "needs_clarification";
 

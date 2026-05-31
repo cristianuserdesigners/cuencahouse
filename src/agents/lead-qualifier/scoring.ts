@@ -48,6 +48,7 @@ export function buildAiSummary(
     buy: language === "es" ? "comprar" : "buy",
     sell: language === "es" ? "vender" : "sell",
     rent: language === "es" ? "arrendar" : "rent",
+    invest: language === "es" ? "invertir" : "invest",
   };
   const typeMap = {
     apartment: language === "es" ? "departamento" : "apartment",

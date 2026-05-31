@@ -1,7 +1,9 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { claude, DEFAULT_MODEL } from "../shared/claude";
-import { QUALIFIER_SYSTEM_PROMPT } from "./prompts";
+import { buildSystemPrompt, QUALIFIER_SYSTEM_PROMPT } from "./prompts";
 import { calculateLeadScore, isQualified } from "./scoring";
+import { formatPropertiesForAgent } from "@/lib/sheets";
+import { createAdminClient } from "@/lib/supabase/admin";
 import type {
   QualifierInput,
   QualifierOutput,
@@ -10,13 +12,45 @@ import type {
   LeadQualificationData,
 } from "./types";
 
+async function buildContextualSystemPrompt(input: QualifierInput): Promise<string> {
+  // Si no hay workspaceId, usar el prompt base
+  if (!input.workspaceId) return QUALIFIER_SYSTEM_PROMPT;
+
+  const supabase = createAdminClient();
+
+  // Fetch workspace config + available properties in parallel
+  const [{ data: workspace }, { data: properties }] = await Promise.all([
+    supabase
+      .from("workspaces")
+      .select("name, agent_name")
+      .eq("id", input.workspaceId)
+      .single(),
+    supabase
+      .from("properties")
+      .select("external_code, title, type, operation, line, price, area_m2, bedrooms, bathrooms, neighborhood, city, photos_album_url, description")
+      .eq("workspace_id", input.workspaceId)
+      .eq("status", "available")
+      .order("price", { ascending: true }),
+  ]);
+
+  return buildSystemPrompt({
+    agentName: workspace?.agent_name ?? "Casa",
+    workspaceName: workspace?.name ?? "Cuenca House",
+    propertiesJson: properties?.length
+      ? formatPropertiesForAgent(properties)
+      : undefined,
+  });
+}
+
 export async function runLeadQualifier(
   input: QualifierInput
 ): Promise<{ output: QualifierOutput; rawResponse: Anthropic.Message }> {
+  const systemPrompt = await buildContextualSystemPrompt(input);
+
   const response = (await claude.messages.create({
     model: DEFAULT_MODEL,
-    max_tokens: 512,
-    system: QUALIFIER_SYSTEM_PROMPT,
+    max_tokens: 600,
+    system: systemPrompt,
     messages: input.messages.map((m) => ({
       role: m.role,
       content: m.content,
@@ -66,7 +100,7 @@ function parseRawResponse(text: string): RawQualifierResponse {
 }
 
 function isValidAction(action: unknown): action is RawQualifierResponse["action"] {
-  return ["ask_next", "qualified", "escalate", "needs_clarification"].includes(
+  return ["ask_next", "qualified", "show_properties", "schedule_visit", "escalate", "needs_clarification"].includes(
     action as string
   );
 }
