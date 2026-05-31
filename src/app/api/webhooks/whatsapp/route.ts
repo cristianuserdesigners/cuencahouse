@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { runLeadQualifier, buildAiSummary } from "@/agents/lead-qualifier";
 import type { ConversationMessage, ConversationState } from "@/agents/lead-qualifier";
 import { logAgentCall } from "@/agents/shared/logger";
@@ -43,7 +43,7 @@ export async function POST(req: Request): Promise<Response> {
   // Mark as read so the sender sees the double blue tick
   markAsRead(inbound.messageId).catch(() => {});
 
-  const supabase = await createClient();
+  const supabase = createAdminClient();
 
   // ── 1. Find or create conversation ─────────────────────────────────────────
   const { data: existingConvo } = await supabase

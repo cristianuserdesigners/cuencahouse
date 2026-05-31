@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 type AgentLogParams = {
   agent: string;
@@ -14,7 +14,7 @@ type AgentLogParams = {
 
 export async function logAgentCall(params: AgentLogParams): Promise<void> {
   try {
-    const supabase = await createClient();
+    const supabase = createAdminClient();
     await supabase.from("agent_logs").insert({
       agent: params.agent,
       conversation_id: params.conversationId ?? null,

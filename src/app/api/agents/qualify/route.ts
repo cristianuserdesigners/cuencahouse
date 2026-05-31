@@ -11,7 +11,7 @@
  * }
  */
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { runLeadQualifier, buildAiSummary } from "@/agents/lead-qualifier";
 import type { ConversationMessage, ConversationState } from "@/agents/lead-qualifier";
 import { logAgentCall } from "@/agents/shared/logger";
@@ -34,7 +34,7 @@ export async function POST(req: NextRequest): Promise<Response> {
     return NextResponse.json({ error: "message is required" }, { status: 400 });
   }
 
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   const channel = body.channel ?? "web";
   const phone = body.phone ?? "test-" + Date.now();
   const source = body.source ?? channel;

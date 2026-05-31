@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 type HitlAction =
   | "send_offer"
@@ -20,7 +20,7 @@ type HitlRequest = {
 export async function requestApproval(
   request: HitlRequest
 ): Promise<{ approvalId: string }> {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   const expiresAt = new Date(
     Date.now() + (request.expiresInHours ?? 2) * 3_600_000
   ).toISOString();
@@ -49,7 +49,7 @@ export async function resolveApproval(
   decision: "approved" | "rejected",
   reviewedBy: string
 ): Promise<void> {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   await supabase
     .from("agent_approvals")
     .update({
