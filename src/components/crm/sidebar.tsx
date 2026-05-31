@@ -9,18 +9,30 @@ import {
   CheckSquare,
   Building2,
   Rocket,
+  LogOut,
+  Settings,
+  Home,
+  Sparkles,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { signOut } from "@/app/login/actions";
 
 const nav = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
   { href: "/leads", label: "Leads", icon: Users },
+  { href: "/properties", label: "Propiedades", icon: Home },
+  { href: "/content", label: "Contenido IA", icon: Sparkles },
   { href: "/pipeline", label: "Pipeline", icon: KanbanSquare },
   { href: "/approvals", label: "Aprobaciones", icon: CheckSquare },
   { href: "/roadmap", label: "Roadmap", icon: Rocket },
+  { href: "/settings", label: "Configuración", icon: Settings },
 ];
 
-export default function Sidebar() {
+type Props = {
+  userEmail?: string;
+};
+
+export default function Sidebar({ userEmail }: Props) {
   const pathname = usePathname();
 
   return (
@@ -59,9 +71,21 @@ export default function Sidebar() {
         })}
       </nav>
 
-      {/* Footer */}
-      <div className="px-6 py-4 border-t border-white/10">
-        <p className="text-xs text-white/30">cuenca.house · v0.1</p>
+      {/* Footer — usuario + logout */}
+      <div className="px-4 py-4 border-t border-white/10 space-y-3">
+        {userEmail && (
+          <p className="text-xs text-white/40 px-2 truncate">{userEmail}</p>
+        )}
+        <form action={signOut}>
+          <button
+            type="submit"
+            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-white/50 hover:text-white hover:bg-white/5 transition-colors"
+          >
+            <LogOut className="w-4 h-4 shrink-0" />
+            Cerrar sesión
+          </button>
+        </form>
+        <p className="text-xs text-white/20 px-2">cuenca.house · v0.1</p>
       </div>
     </aside>
   );

@@ -16,6 +16,7 @@ export type Database = {
           google_sheets_id: string | null;
           sheets_tab_vip: string;
           sheets_tab_standard: string;
+          sheets_tabs: { name: string; line: string }[] | null;
           last_sheets_sync: string | null;
           whatsapp_phone_id: string | null;
           whatsapp_token: string | null;
@@ -41,6 +42,7 @@ export type Database = {
           google_sheets_id?: string | null;
           sheets_tab_vip?: string;
           sheets_tab_standard?: string;
+          sheets_tabs?: { name: string; line: string }[] | null;
           whatsapp_phone_id?: string | null;
           whatsapp_token?: string | null;
           meta_verify_token?: string | null;
@@ -62,6 +64,7 @@ export type Database = {
           google_sheets_id?: string | null;
           sheets_tab_vip?: string;
           sheets_tab_standard?: string;
+          sheets_tabs?: { name: string; line: string }[] | null;
           last_sheets_sync?: string | null;
           whatsapp_phone_id?: string | null;
           whatsapp_token?: string | null;

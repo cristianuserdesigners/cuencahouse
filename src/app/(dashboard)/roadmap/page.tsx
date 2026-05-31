@@ -44,11 +44,11 @@ const ROADMAP: Week[] = [
     theme: "Auth + Inventario + Content Agent",
     status: "in_progress",
     tasks: [
-      { title: "Auth con Supabase — login para Verónica y Cris", status: "pending" },
-      { title: "Propiedades CRUD — inventario completo", status: "pending" },
-      { title: "Content Agent — descripciones, hooks TikTok, captions IG", status: "pending" },
+      { title: "Auth con Supabase — login para Verónica y Cris", status: "done" },
+      { title: "Propiedades CRUD — inventario completo", status: "done" },
+      { title: "Content Agent — descripciones, hooks TikTok, captions IG", status: "done" },
       { title: "WhatsApp Business real — conectar número de Cuenca House", status: "pending" },
-      { title: "Dashboard leads — filtros por estado, fuente, score", status: "pending" },
+      { title: "Dashboard leads — filtros por estado, fuente, score", status: "done" },
     ],
   },
   {
