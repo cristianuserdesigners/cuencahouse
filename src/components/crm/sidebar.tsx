@@ -13,6 +13,7 @@ import {
   Settings,
   Home,
   Sparkles,
+  FlaskConical,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { signOut } from "@/app/login/actions";
@@ -22,6 +23,7 @@ const nav = [
   { href: "/leads", label: "Leads", icon: Users },
   { href: "/properties", label: "Propiedades", icon: Home },
   { href: "/content", label: "Contenido IA", icon: Sparkles },
+  { href: "/test-agent", label: "Probar agente", icon: FlaskConical },
   { href: "/pipeline", label: "Pipeline", icon: KanbanSquare },
   { href: "/approvals", label: "Aprobaciones", icon: CheckSquare },
   { href: "/roadmap", label: "Roadmap", icon: Rocket },

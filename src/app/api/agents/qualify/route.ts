@@ -18,9 +18,7 @@ import { logAgentCall } from "@/agents/shared/logger";
 import { DEFAULT_MODEL } from "@/agents/shared/claude";
 
 export async function POST(req: NextRequest): Promise<Response> {
-  if (process.env.NODE_ENV === "production") {
-    return NextResponse.json({ error: "Not available in production" }, { status: 403 });
-  }
+  // Disponible solo para usuarios autenticados del CRM
 
   const body = await req.json() as {
     phone?: string;
