@@ -49,7 +49,7 @@ export async function runLeadQualifier(
 
   const response = (await claude.messages.create({
     model: DEFAULT_MODEL,
-    max_tokens: 600,
+    max_tokens: 1024,
     system: systemPrompt,
     messages: input.messages.map((m) => ({
       role: m.role,
@@ -60,7 +60,36 @@ export async function runLeadQualifier(
   const text =
     response.content[0].type === "text" ? response.content[0].text : "{}";
 
-  const raw = parseRawResponse(text);
+  let raw = parseRawResponse(text);
+
+  // Si el JSON falló (respuesta fallback), reintentar con instrucción explícita
+  if (raw.message === "¿Me podría contar un poco más sobre lo que busca?") {
+    const retryResponse = (await claude.messages.create({
+      model: DEFAULT_MODEL,
+      max_tokens: 1024,
+      system: systemPrompt,
+      messages: [
+        ...input.messages.map((m) => ({ role: m.role, content: m.content })),
+        {
+          role: "assistant" as const,
+          content: text, // lo que generó antes (inválido)
+        },
+        {
+          role: "user" as const,
+          content: "Tu respuesta anterior no era JSON válido. Responde SOLO con el objeto JSON, sin texto ni markdown.",
+        },
+      ],
+    })) as Anthropic.Message;
+
+    const retryText = retryResponse.content[0].type === "text" ? retryResponse.content[0].text : "{}";
+    const retryRaw = parseRawResponse(retryText);
+
+    // Solo usar el retry si mejoró
+    if (retryRaw.message !== "¿Me podría contar un poco más sobre lo que busca?") {
+      raw = retryRaw;
+    }
+  }
+
   const output = buildOutput(raw, input);
 
   return { output, rawResponse: response };
