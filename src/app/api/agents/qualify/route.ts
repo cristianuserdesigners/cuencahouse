@@ -20,6 +20,8 @@ import { DEFAULT_MODEL } from "@/agents/shared/claude";
 export async function POST(req: NextRequest): Promise<Response> {
   // Disponible solo para usuarios autenticados del CRM
 
+  const WORKSPACE_ID = "9a67ad1f-2b8d-455a-bcd1-e49eb7e57951";
+
   const body = await req.json() as {
     phone?: string;
     message: string;
@@ -93,6 +95,7 @@ export async function POST(req: NextRequest): Promise<Response> {
   try {
     agentResult = await runLeadQualifier({
       conversationId: existingConvo?.id ?? "test",
+      workspaceId: WORKSPACE_ID,
       leadId,
       phone,
       channel,

@@ -11,6 +11,8 @@ import {
 } from "@/lib/whatsapp";
 import { DEFAULT_MODEL } from "@/agents/shared/claude";
 
+const WORKSPACE_ID = "9a67ad1f-2b8d-455a-bcd1-e49eb7e57951";
+
 // GET — Meta webhook verification challenge
 export async function GET(req: Request): Promise<Response> {
   const { searchParams } = new URL(req.url);
@@ -103,6 +105,7 @@ export async function POST(req: Request): Promise<Response> {
   try {
     agentResult = await runLeadQualifier({
       conversationId: conversationId ?? "pending",
+      workspaceId: WORKSPACE_ID,
       leadId,
       phone: inbound.phone,
       channel: "whatsapp",
