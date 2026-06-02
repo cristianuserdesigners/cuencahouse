@@ -89,6 +89,7 @@ const ROADMAP: Week[] = [
       { title: "🚀 Publicación Social IA — 1 clic desde el CRM publica en IG, TikTok, Facebook (Canva + copy IA)", status: "pending", note: "Feature estrella SaaS" },
       { title: "Property Matcher IA — top 3 propiedades con justificación al calificar lead", status: "pending" },
       { title: "Tour Scheduler — agendamiento automático con Google Calendar", status: "pending" },
+      { title: "📊 Property Intelligence — métricas por propiedad: interesados, score, lead más caliente", status: "pending", note: "property_interests table + dashboard" },
       { title: "📲 Bot captación propiedades — agente sube por WhatsApp (fotos + voz, sin Excel)", status: "pending", note: "Vision + Whisper" },
       { title: "🔍 Property Matcher agente — busca inventario por voz/texto en WhatsApp frente al cliente", status: "pending", note: "Detección agente vs lead" },
       { title: "Multi-tenant — onboarding de nuevos agentes inmobiliarios al sistema", status: "pending" },
