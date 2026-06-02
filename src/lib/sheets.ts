@@ -65,7 +65,8 @@ function parsePrecio(raw: string): number {
 }
 
 function normalizeArea(raw: string): number | null {
-  const v = raw.replace(/[^0-9.]/g, "");
+  // Maneja "126.29 m2", "114,30 m2", "200m²", etc.
+  const v = raw.replace(/[^0-9.,]/g, "").replace(",", ".");
   return v ? parseFloat(v) : null;
 }
 
@@ -86,6 +87,7 @@ function normalizeOperacion(precio: number): string {
 function normalizeStatus(raw: string): string {
   const r = raw.toLowerCase();
   if (r.includes("disponible") || r.includes("available")) return "available";
+  if (r.includes("construccion") || r.includes("construcción") || r.includes("en obra")) return "reserved";
   if (r.includes("alquilado") || r.includes("rented")) return "rented";
   if (r.includes("vendido") || r.includes("sold")) return "sold";
   if (r.includes("contrato") || r.includes("reserv")) return "reserved";
@@ -193,7 +195,7 @@ export async function syncWorkspaceProperties(workspaceId: string): Promise<{
     for (const tab of tabs) {
       try {
         const rows = await fetchSheetTab(workspace.google_sheets_id, tab.name);
-        allUpserts.push(...rows.map((p) => buildUpsert(p, workspaceId, tab.line)));
+        allUpserts.push(...rows.map((p) => buildUpsert(p, workspaceId, tab.line, tab.name)));
         processedTabs.push(tab.name);
       } catch (e) {
         errors.push(`Tab "${tab.name}": ${(e as Error).message}`);
@@ -217,15 +219,18 @@ export async function syncWorkspaceProperties(workspaceId: string): Promise<{
   return { upserted: allUpserts.length, errors, tabs: processedTabs };
 }
 
-function buildUpsert(p: SheetProperty, workspaceId: string, line: TabConfig["line"]) {
+function buildUpsert(p: SheetProperty, workspaceId: string, line: TabConfig["line"], tabName?: string) {
   const parts = p.ubicacion.split(",").map((s) => s.trim());
   const ciudad = parts[parts.length - 1] || "Cuenca";
   const sector = parts.length > 1 ? parts[parts.length - 2] : null;
   const operation = line === "rentas" ? "rent" : normalizeOperacion(p.precio);
 
+  // Si el mismo código aparece en varias pestañas, añadir prefijo de línea para evitar colisión
+  const externalCode = tabName ? `${line.toUpperCase()}-${p.codigo}` : p.codigo;
+
   return {
     workspace_id: workspaceId,
-    external_code: p.codigo,
+    external_code: externalCode,
     title: buildTitle(p.tipo, sector, ciudad),
     type: normalizeTipo(p.tipo),
     operation,
