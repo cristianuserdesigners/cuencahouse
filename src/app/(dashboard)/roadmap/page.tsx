@@ -86,7 +86,7 @@ const ROADMAP: Week[] = [
     theme: "Features avanzados",
     status: "pending",
     tasks: [
-      { title: "🎨 Canva Auto-Arte — sync Sheet + Google Fotos → diseños listos para IG/TikTok", status: "pending", note: "Canva API + Content Agent" },
+      { title: "🚀 Publicación Social IA — 1 clic desde el CRM publica en IG, TikTok, Facebook (Canva + copy IA)", status: "pending", note: "Feature estrella SaaS" },
       { title: "Property Matcher IA — top 3 propiedades con justificación al calificar lead", status: "pending" },
       { title: "Tour Scheduler — agendamiento automático con Google Calendar", status: "pending" },
       { title: "Multi-tenant — onboarding de nuevos agentes inmobiliarios al sistema", status: "pending" },
