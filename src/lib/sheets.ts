@@ -96,9 +96,14 @@ function normalizeStatus(raw: string): string {
 
 export async function fetchSheetTab(
   sheetsId: string,
-  gid: string = "0"
+  tabNameOrGid: string = "0"
 ): Promise<SheetProperty[]> {
-  const url = `https://docs.google.com/spreadsheets/d/${sheetsId}/export?format=csv&gid=${gid}`;
+  // Si es numérico → usar gid. Si es nombre → usar gviz/tq que acepta nombres de pestaña
+  const isNumeric = /^\d+$/.test(tabNameOrGid);
+  const url = isNumeric
+    ? `https://docs.google.com/spreadsheets/d/${sheetsId}/export?format=csv&gid=${tabNameOrGid}`
+    : `https://docs.google.com/spreadsheets/d/${sheetsId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(tabNameOrGid)}`;
+
   const res = await fetch(url, { cache: "no-store" });
 
   if (!res.ok) throw new Error(`HTTP ${res.status} al leer el Sheet`);
@@ -225,8 +230,11 @@ function buildUpsert(p: SheetProperty, workspaceId: string, line: TabConfig["lin
   const sector = parts.length > 1 ? parts[parts.length - 2] : null;
   const operation = line === "rentas" ? "rent" : normalizeOperacion(p.precio);
 
-  // Si el mismo código aparece en varias pestañas, añadir prefijo de línea para evitar colisión
-  const externalCode = tabName ? `${line.toUpperCase()}-${p.codigo}` : p.codigo;
+  // Prefijo con abreviación del nombre de la pestaña para evitar colisiones entre tabs
+  const tabPrefix = tabName
+    ? tabName.toUpperCase().replace(/\s+/g, "_").substring(0, 6)
+    : null;
+  const externalCode = tabPrefix ? `${tabPrefix}-${p.codigo}` : p.codigo;
 
   return {
     workspace_id: workspaceId,
