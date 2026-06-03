@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { MessageCircle, ChevronDown, MapPin, Bed, Bath, Maximize2, Phone, Building2 } from "lucide-react";
+import { MessageCircle, ChevronDown, MapPin, Bed, Bath, Maximize2, Phone, Building2, ChevronRight } from "lucide-react";
 import PublicNav from "./nav";
+import StructuredData from "./structured-data";
 import { t, WA_LINK, type Lang } from "@/lib/i18n";
 
 type Property = {
@@ -52,6 +53,7 @@ export default function LandingClient({ properties, heroPhoto }: { properties: P
 
   return (
     <div className="min-h-screen bg-[#F7F6F2]">
+      <StructuredData />
       <PublicNav lang={lang} onLangChange={setLang} />
 
       {/* ── HERO ─────────────────────────────────────────────────────── */}
@@ -194,6 +196,35 @@ export default function LandingClient({ properties, heroPhoto }: { properties: P
         </div>
       </section>
 
+      {/* ── FAQ ──────────────────────────────────────────────────────── */}
+      <section className="py-16 px-5 bg-white">
+        <div className="max-w-3xl mx-auto">
+          <h2 className="text-2xl font-bold text-[#1a2744] mb-8 text-center">
+            {lang === "es" ? "Preguntas frecuentes" : "Frequently Asked Questions"}
+          </h2>
+          <div className="space-y-3">
+            {[
+              {
+                q: lang === "es" ? "¿Cuánto cuesta una casa en Cuenca Ecuador?" : "How much does a house cost in Cuenca Ecuador?",
+                a: lang === "es" ? "Los precios varían entre $80,000 y $300,000 USD. En zonas como Misicata y Ricaurte puedes encontrar casas de 3 habitaciones desde $107,000 USD." : "Prices range from $80,000 to $300,000 USD. In areas like Misicata and Ricaurte you can find 3-bedroom homes from $107,000 USD.",
+              },
+              {
+                q: lang === "es" ? "¿Pueden los extranjeros comprar propiedades en Ecuador?" : "Can foreigners buy property in Ecuador?",
+                a: lang === "es" ? "Sí, con los mismos derechos que ciudadanos ecuatorianos. No se requiere residencia. Te asesoramos en todo el proceso." : "Yes, with the same rights as Ecuadorian citizens. No residency required. We guide you through the entire process.",
+              },
+              {
+                q: lang === "es" ? "¿Cuánto cuesta vivir en Cuenca Ecuador?" : "How much does it cost to live in Cuenca Ecuador?",
+                a: lang === "es" ? "Una pareja puede vivir cómodamente con $1,500–$2,000 USD al mes, incluyendo alquiler, comida, transporte y ocio." : "A couple can live comfortably for $1,500–$2,000 USD per month, including rent, food, transportation and leisure.",
+              },
+              {
+                q: lang === "es" ? "¿Qué comisión cobra Cuenca House?" : "What commission does Cuenca House charge?",
+                a: lang === "es" ? "3% en venta, sin letra pequeña. Para arriendos, un mes de renta. Transparencia total desde el primer mensaje." : "3% on sales, no hidden fees. For rentals, one month's rent. Full transparency from the first message.",
+              },
+            ].map((item, i) => <FaqItem key={i} q={item.q} a={item.a} />)}
+          </div>
+        </div>
+      </section>
+
       {/* ── FOOTER ───────────────────────────────────────────────────── */}
       <footer className="bg-[#0d1b2e] px-5 py-10">
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -284,6 +315,25 @@ function PropertyCard({ p, lang, tx, waLink }: {
           {tx.contact}
         </a>
       </div>
+    </div>
+  );
+}
+
+
+function FaqItem({ q, a }: { q: string; a: string }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="border border-gray-100 rounded-xl overflow-hidden">
+      <button onClick={() => setOpen(!open)}
+        className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-gray-50 transition-colors">
+        <span className="font-medium text-gray-800 text-sm pr-4">{q}</span>
+        <ChevronRight className={`w-4 h-4 text-gray-400 shrink-0 transition-transform ${open ? "rotate-90" : ""}`} />
+      </button>
+      {open && (
+        <div className="px-5 pb-4 text-sm text-gray-600 leading-relaxed border-t border-gray-50 pt-3">
+          {a}
+        </div>
+      )}
     </div>
   );
 }
