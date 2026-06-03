@@ -30,8 +30,10 @@ export async function middleware(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
 
-  // Rutas públicas: login + webhooks de WhatsApp
+  // Rutas públicas: landing, login, webhooks
   const isPublic =
+    pathname === "/" ||
+    pathname.startsWith("/propiedades") ||
     pathname.startsWith("/login") ||
     pathname.startsWith("/api/webhooks");
 
