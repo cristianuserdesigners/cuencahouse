@@ -42,7 +42,7 @@ export async function middleware(request: NextRequest) {
   }
 
   if (session && pathname === "/login") {
-    return NextResponse.redirect(new URL("/", request.url));
+    return NextResponse.redirect(new URL("/leads", request.url));
   }
 
   return supabaseResponse;

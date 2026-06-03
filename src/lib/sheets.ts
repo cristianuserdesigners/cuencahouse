@@ -9,6 +9,7 @@
  */
 
 import { createAdminClient } from "@/lib/supabase/admin";
+import { getFirstPhotoFromAlbum } from "@/lib/photos";
 
 export type SheetProperty = {
   codigo: string;
@@ -221,6 +222,34 @@ export async function syncWorkspaceProperties(workspaceId: string): Promise<{
     .update({ last_sheets_sync: new Date().toISOString() })
     .eq("id", workspaceId);
 
+  // Post-sync: extraer fotos de portada para propiedades con álbum nuevo o sin foto
+  const { data: needsPhoto } = await supabase
+    .from("properties")
+    .select("id, photos_album_url")
+    .eq("workspace_id", workspaceId)
+    .not("photos_album_url", "is", null)
+    .not("photos_album_url", "eq", "[URL]")
+    .is("cover_photo_url", null);
+
+  if (needsPhoto?.length) {
+    // Deduplicar por álbum — extraer cada álbum único una sola vez
+    const albumMap = new Map<string, string>();
+    for (const p of needsPhoto) {
+      if (p.photos_album_url && !albumMap.has(p.photos_album_url)) {
+        const url = await getFirstPhotoFromAlbum(p.photos_album_url).catch(() => null);
+        if (url) albumMap.set(p.photos_album_url, url);
+      }
+    }
+    // Actualizar todas las propiedades que comparten el mismo álbum
+    for (const [album, coverUrl] of albumMap.entries()) {
+      await supabase
+        .from("properties")
+        .update({ cover_photo_url: coverUrl })
+        .eq("workspace_id", workspaceId)
+        .eq("photos_album_url", album);
+    }
+  }
+
   return { upserted: allUpserts.length, errors, tabs: processedTabs };
 }
 
@@ -237,6 +266,7 @@ function buildUpsert(p: SheetProperty, workspaceId: string, line: TabConfig["lin
   const externalCode = tabPrefix ? `${tabPrefix}-${p.codigo}` : p.codigo;
 
   return {
+    cover_photo_url: null as string | null, // se llena en post-sync
     workspace_id: workspaceId,
     external_code: externalCode,
     title: buildTitle(p.tipo, sector, ciudad),

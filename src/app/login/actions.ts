@@ -17,7 +17,7 @@ export async function signIn(
     return { error: error.message };
   }
 
-  redirect("/");
+  redirect("/leads");
 }
 
 export async function signOut() {

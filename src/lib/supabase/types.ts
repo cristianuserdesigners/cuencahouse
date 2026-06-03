@@ -206,6 +206,7 @@ export type Database = {
           city: string;
           features: string[];
           photos_album_url: string | null;
+          cover_photo_url: string | null;
           external_code: string | null;
           sheets_row_id: string | null;
           notes: string | null;
@@ -232,6 +233,7 @@ export type Database = {
           city?: string;
           features?: string[];
           photos_album_url?: string | null;
+          cover_photo_url?: string | null;
           external_code?: string | null;
           sheets_row_id?: string | null;
           notes?: string | null;
@@ -257,6 +259,7 @@ export type Database = {
           city?: string;
           features?: string[];
           photos_album_url?: string | null;
+          cover_photo_url?: string | null;
           external_code?: string | null;
           notes?: string | null;
           agent_id?: string | null;
