@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Building2, Menu, X } from "lucide-react";
+import Image from "next/image";
+import { Menu, X } from "lucide-react";
 import { t, WA_LINK, type Lang } from "@/lib/i18n";
 
 type Props = { lang: Lang; onLangChange: (l: Lang) => void };
@@ -24,8 +25,8 @@ export default function PublicNav({ lang, onLangChange }: Props) {
     }`}>
       <div className="max-w-6xl mx-auto px-5 h-16 flex items-center justify-between">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2">
-          <Building2 className={`w-5 h-5 ${scrolled ? "text-[#c9a84c]" : "text-[#c9a84c]"}`} />
+        <Link href="/" className="flex items-center gap-2.5">
+          <Image src="/isotipo.png" alt="Cuenca House" width={32} height={32} className="rounded-lg" />
           <span className={`font-bold tracking-wide text-sm uppercase ${scrolled ? "text-[#1a2744]" : "text-white"}`}>
             Cuenca <span className="text-[#c9a84c]">House</span>
           </span>
