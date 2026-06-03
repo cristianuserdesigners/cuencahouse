@@ -17,6 +17,7 @@ type Property = {
   neighborhood: string | null;
   city: string;
   photos_album_url: string | null;
+  coverPhoto?: string | null;
   line: string;
   status: string;
 };
@@ -47,7 +48,7 @@ export default function LandingClient({ properties, heroPhoto }: { properties: P
   const [lang, setLang] = useState<Lang>("es");
   const tx = t[lang];
 
-  const available = properties.filter((p) => p.status === "available").slice(0, 6);
+  const available = properties.filter((p) => ["available", "reserved"].includes(p.status)).slice(0, 6);
 
   return (
     <div className="min-h-screen bg-[#F7F6F2]">
@@ -228,19 +229,28 @@ function PropertyCard({ p, lang, tx, waLink }: {
 
   return (
     <div className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all hover:-translate-y-1 group">
-      {/* Foto placeholder — gradiente hasta tener imágenes reales */}
-      <div className="h-48 bg-gradient-to-br from-[#1a2744] to-[#2d4270] relative overflow-hidden flex items-center justify-center">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(201,168,76,0.2),transparent)]" />
-        <Building2 className="w-12 h-12 text-white/20" />
+      {/* Foto de portada */}
+      <div className="h-48 relative overflow-hidden">
+        {p.coverPhoto ? (
+          <div className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-transform duration-500 group-hover:scale-105"
+            style={{ backgroundImage: `url(${p.coverPhoto})` }} />
+        ) : (
+          <div className="absolute inset-0 bg-gradient-to-br from-[#1a2744] to-[#2d4270] flex items-center justify-center">
+            <Building2 className="w-12 h-12 text-white/20" />
+          </div>
+        )}
+        {/* Overlay sutil en hover */}
+        <div className="absolute inset-0 bg-[#1a2744]/0 group-hover:bg-[#1a2744]/20 transition-colors duration-300" />
+        {/* Ver fotos */}
         {p.photos_album_url && p.photos_album_url !== "[URL]" && (
           <a href={p.photos_album_url} target="_blank" rel="noopener noreferrer"
-            className="absolute bottom-2 right-2 bg-white/20 text-white text-xs px-2 py-1 rounded-full hover:bg-white/30 transition-colors">
+            className="absolute bottom-2 right-2 bg-black/40 backdrop-blur-sm text-white text-xs px-2.5 py-1 rounded-full hover:bg-black/60 transition-colors">
             📸 {lang === "es" ? "Ver fotos" : "View photos"}
           </a>
         )}
-        {/* Badges */}
-        <div className="absolute top-3 left-3 flex gap-1.5">
-          <span className={`text-xs px-2 py-0.5 rounded-full font-medium border ${lineStyle}`}>
+        {/* Badge línea */}
+        <div className="absolute top-3 left-3">
+          <span className={`text-xs px-2.5 py-1 rounded-full font-medium border backdrop-blur-sm ${lineStyle}`}>
             {lineLabel}
           </span>
         </div>
