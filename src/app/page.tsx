@@ -1,4 +1,5 @@
 import { createAdminClient } from "@/lib/supabase/admin";
+import { getFirstPhotoFromAlbum } from "@/lib/photos";
 import LandingClient from "@/components/public/landing-client";
 
 export const dynamic = "force-dynamic";
@@ -20,5 +21,13 @@ export default async function HomePage() {
     .order("price", { ascending: true })
     .limit(9);
 
-  return <LandingClient properties={properties ?? []} />;
+  // Tomar la primera foto del álbum de la primera propiedad disponible con fotos
+  const firstWithPhotos = (properties ?? []).find(
+    (p) => p.photos_album_url && p.photos_album_url !== "[URL]"
+  );
+  const heroPhoto = firstWithPhotos?.photos_album_url
+    ? await getFirstPhotoFromAlbum(firstWithPhotos.photos_album_url)
+    : null;
+
+  return <LandingClient properties={properties ?? []} heroPhoto={heroPhoto} />;
 }

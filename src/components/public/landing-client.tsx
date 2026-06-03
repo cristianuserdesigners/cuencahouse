@@ -43,7 +43,7 @@ const LINE_LABELS: Record<string, Record<string, string>> = {
   proyectos: { es: "Proyecto", en: "Project" },
 };
 
-export default function LandingClient({ properties }: { properties: Property[] }) {
+export default function LandingClient({ properties, heroPhoto }: { properties: Property[]; heroPhoto?: string | null }) {
   const [lang, setLang] = useState<Lang>("es");
   const tx = t[lang];
 
@@ -55,11 +55,20 @@ export default function LandingClient({ properties }: { properties: Property[] }
 
       {/* ── HERO ─────────────────────────────────────────────────────── */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-        {/* Background gradient (reemplazar con foto real de Cuenca) */}
-        <div className="absolute inset-0 bg-gradient-to-br from-[#0d1b2e] via-[#1a2744] to-[#0a1628]" />
-        {/* Decorative gold accent */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(201,168,76,0.15),transparent_60%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,rgba(201,168,76,0.08),transparent_60%)]" />
+        {/* Background: foto real si existe, gradiente como fallback */}
+        {heroPhoto ? (
+          <>
+            <div className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+              style={{ backgroundImage: `url(${heroPhoto})` }} />
+            {/* Overlay oscuro para legibilidad del texto */}
+            <div className="absolute inset-0 bg-gradient-to-b from-[#0d1b2e]/80 via-[#1a2744]/70 to-[#0a1628]/90" />
+          </>
+        ) : (
+          <>
+            <div className="absolute inset-0 bg-gradient-to-br from-[#0d1b2e] via-[#1a2744] to-[#0a1628]" />
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(201,168,76,0.15),transparent_60%)]" />
+          </>
+        )}
 
         <div className="relative z-10 max-w-6xl mx-auto px-5 pt-24 pb-16 text-center">
           <span className="inline-flex items-center gap-2 text-[#c9a84c] text-xs font-semibold uppercase tracking-widest mb-6 border border-[#c9a84c]/30 rounded-full px-4 py-1.5">
