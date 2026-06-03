@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { MessageCircle, ChevronDown, MapPin, Bed, Bath, Maximize2, Phone, Building2, ChevronRight } from "lucide-react";
 import PublicNav from "./nav";
-import StructuredData from "./structured-data";
+import StructuredData, { FAQ_DATA } from "./structured-data";
 import { t, WA_LINK, type Lang } from "@/lib/i18n";
 
 type Property = {
@@ -203,24 +203,13 @@ export default function LandingClient({ properties, heroPhoto }: { properties: P
             {lang === "es" ? "Preguntas frecuentes" : "Frequently Asked Questions"}
           </h2>
           <div className="space-y-3">
-            {[
-              {
-                q: lang === "es" ? "¿Cuánto cuesta una casa en Cuenca Ecuador?" : "How much does a house cost in Cuenca Ecuador?",
-                a: lang === "es" ? "Los precios varían entre $80,000 y $300,000 USD. En zonas como Misicata y Ricaurte puedes encontrar casas de 3 habitaciones desde $107,000 USD." : "Prices range from $80,000 to $300,000 USD. In areas like Misicata and Ricaurte you can find 3-bedroom homes from $107,000 USD.",
-              },
-              {
-                q: lang === "es" ? "¿Pueden los extranjeros comprar propiedades en Ecuador?" : "Can foreigners buy property in Ecuador?",
-                a: lang === "es" ? "Sí, con los mismos derechos que ciudadanos ecuatorianos. No se requiere residencia. Te asesoramos en todo el proceso." : "Yes, with the same rights as Ecuadorian citizens. No residency required. We guide you through the entire process.",
-              },
-              {
-                q: lang === "es" ? "¿Cuánto cuesta vivir en Cuenca Ecuador?" : "How much does it cost to live in Cuenca Ecuador?",
-                a: lang === "es" ? "Una pareja puede vivir cómodamente con $1,500–$2,000 USD al mes, incluyendo alquiler, comida, transporte y ocio." : "A couple can live comfortably for $1,500–$2,000 USD per month, including rent, food, transportation and leisure.",
-              },
-              {
-                q: lang === "es" ? "¿Qué comisión cobra Cuenca House?" : "What commission does Cuenca House charge?",
-                a: lang === "es" ? "3% en venta, sin letra pequeña. Para arriendos, un mes de renta. Transparencia total desde el primer mensaje." : "3% on sales, no hidden fees. For rentals, one month's rent. Full transparency from the first message.",
-              },
-            ].map((item, i) => <FaqItem key={i} q={item.q} a={item.a} />)}
+            {FAQ_DATA.map((item, i) => (
+              <FaqItem
+                key={i}
+                q={lang === "es" ? item.q_es : item.q_en}
+                a={lang === "es" ? item.a_es : item.a_en}
+              />
+            ))}
           </div>
         </div>
       </section>
