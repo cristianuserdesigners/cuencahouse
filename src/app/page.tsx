@@ -20,7 +20,8 @@ export default async function HomePage() {
     .order("line", { ascending: true })
     .order("price", { ascending: true });
 
-  // Deduplicar por álbum — un card por proyecto
+  // Mostrar todas las propiedades disponibles (sin límite)
+  // Deduplicar por álbum de fotos — un card por proyecto distinto
   const seen = new Set<string>();
   const properties = (allProperties ?? [])
     .filter((p) => {
@@ -31,7 +32,6 @@ export default async function HomePage() {
       seen.add(key);
       return true;
     })
-    .slice(0, 6)
     .map((p) => ({ ...p, coverPhoto: p.cover_photo_url ?? null }));
 
   const heroPhoto = properties.find((p) => p.coverPhoto)?.coverPhoto ?? null;
