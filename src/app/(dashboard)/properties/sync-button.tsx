@@ -19,9 +19,10 @@ export default function SyncButton() {
       const data = await res.json();
       if (data.ok) {
         setStatus("ok");
-        setResult(`${data.upserted} propiedades sincronizadas`);
-        // Recargar la página para ver los cambios
-        setTimeout(() => window.location.reload(), 1200);
+        const removed = data.errors?.filter((e: string) => e.includes("marcadas como vendidas"))?.length > 0
+          ? ` · ${data.errors.find((e: string) => e.includes("marcadas"))}` : "";
+        setResult(`${data.upserted} sincronizadas${removed}`);
+        setTimeout(() => window.location.reload(), 1500);
       } else {
         setStatus("error");
         setResult(data.error ?? "Error desconocido");

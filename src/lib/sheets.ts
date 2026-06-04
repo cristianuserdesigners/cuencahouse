@@ -217,6 +217,28 @@ export async function syncWorkspaceProperties(workspaceId: string): Promise<{
 
   if (error) errors.push(`Supabase: ${error.message}`);
 
+  // ── Marcar como "sold" las propiedades que ya no están en el Sheet ─────────
+  // Solo las que tienen synced_at (vinieron del Sheet) y cuyo código ya no existe
+  const syncedCodes = new Set(allUpserts.map((u) => u.external_code));
+  const { data: existingFromSheet } = await supabase
+    .from("properties")
+    .select("id, external_code")
+    .eq("workspace_id", workspaceId)
+    .not("synced_at", "is", null);   // solo las del Sheet, no las creadas manualmente
+
+  const orphans = (existingFromSheet ?? [])
+    .filter((p) => !syncedCodes.has(p.external_code ?? ""))
+    .map((p) => p.id);
+
+  if (orphans.length > 0) {
+    // Las marcamos como "sold" en lugar de borrarlas — preservamos historial
+    await supabase
+      .from("properties")
+      .update({ status: "sold" })
+      .in("id", orphans);
+    errors.push(`${orphans.length} propiedad(es) marcadas como vendidas/eliminadas del Sheet`);
+  }
+
   await supabase
     .from("workspaces")
     .update({ last_sheets_sync: new Date().toISOString() })
