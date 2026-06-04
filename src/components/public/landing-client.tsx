@@ -293,13 +293,26 @@ function PropertyCard({ p, lang, tx, waLink }: {
           {[p.neighborhood, p.city].filter(Boolean).join(", ")}
         </p>
 
-        {/* Precio: "Desde $X" para proyectos, precio fijo para unidades individuales */}
+        {/* Precio: "Desde $X" cuando hay múltiples unidades en el grupo */}
         <p className="text-xl font-bold text-[#1a2744] mb-4">
-          {p.isProject && p.unitCount && p.unitCount > 1
-            ? <><span className="text-sm font-normal text-gray-400 mr-1">{lang === "es" ? "Desde" : "From"}</span>${(p.fromPrice ?? p.price).toLocaleString("es-EC")}</>
-            : price
-          }
-          {p.operation === "rent" && <span className="text-xs font-normal text-gray-400 ml-1">/{lang === "es" ? "mes" : "mo"}</span>}
+          {p.isProject && p.unitCount && p.unitCount > 1 ? (
+            <>
+              <span className="text-sm font-normal text-gray-400 mr-1">
+                {lang === "es" ? "Desde" : "From"}
+              </span>
+              ${(p.fromPrice ?? p.price).toLocaleString("es-EC")}
+            </>
+          ) : (
+            <>
+              ${p.price.toLocaleString("es-EC")}
+              {/* /mes solo para arriendos con precio razonable (< $10k) */}
+              {p.operation === "rent" && p.price < 10000 && (
+                <span className="text-xs font-normal text-gray-400 ml-1">
+                  /{lang === "es" ? "mes" : "mo"}
+                </span>
+              )}
+            </>
+          )}
         </p>
 
         <div className="flex items-center gap-3 text-xs text-gray-500 mb-4">
