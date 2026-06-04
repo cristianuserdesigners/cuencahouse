@@ -20,19 +20,29 @@ export default async function HomePage() {
     .order("line", { ascending: true })
     .order("price", { ascending: true });
 
-  // Mostrar todas las propiedades disponibles (sin límite)
-  // Deduplicar por álbum de fotos — un card por proyecto distinto
-  const seen = new Set<string>();
-  const properties = (allProperties ?? [])
-    .filter((p) => {
-      const key = p.photos_album_url && p.photos_album_url !== "[URL]"
-        ? p.photos_album_url
-        : p.id;
-      if (seen.has(key)) return false;
-      seen.add(key);
-      return true;
-    })
-    .map((p) => ({ ...p, coverPhoto: p.cover_photo_url ?? null }));
+  // Agrupar por álbum de fotos — un card por proyecto con precio mínimo y conteo de unidades
+  type PropRow = NonNullable<typeof allProperties>[0];
+  const groupMap = new Map<string, PropRow[]>();
+  for (const p of (allProperties ?? [])) {
+    const key = p.photos_album_url && p.photos_album_url !== "[URL]"
+      ? p.photos_album_url
+      : p.id;
+    if (!groupMap.has(key)) groupMap.set(key, []);
+    groupMap.get(key)!.push(p);
+  }
+
+  const properties = Array.from(groupMap.values()).map((group) => {
+    // Usar la propiedad con precio más bajo como representante del grupo
+    const sorted = [...group].sort((a, b) => a.price - b.price);
+    const rep = sorted[0];
+    return {
+      ...rep,
+      coverPhoto: rep.cover_photo_url ?? null,
+      unitCount: group.length,               // número de unidades en el proyecto
+      fromPrice: sorted[0].price,            // precio mínimo del grupo
+      isProject: group.length > 1,           // true si hay más de una unidad
+    };
+  });
 
   const heroPhoto = properties.find((p) => p.coverPhoto)?.coverPhoto ?? null;
 

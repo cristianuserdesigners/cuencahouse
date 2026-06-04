@@ -12,6 +12,9 @@ type Property = {
   type: string;
   operation: string;
   price: number;
+  fromPrice?: number;
+  isProject?: boolean;
+  unitCount?: number;
   area_m2: number | null;
   bedrooms: number | null;
   bathrooms: number | null;
@@ -268,11 +271,16 @@ function PropertyCard({ p, lang, tx, waLink }: {
             📸 {lang === "es" ? "Ver fotos" : "View photos"}
           </a>
         )}
-        {/* Badge línea */}
-        <div className="absolute top-3 left-3">
+        {/* Badges: línea + unidades del proyecto */}
+        <div className="absolute top-3 left-3 flex gap-1.5">
           <span className={`text-xs px-2.5 py-1 rounded-full font-medium border backdrop-blur-sm ${lineStyle}`}>
             {lineLabel}
           </span>
+          {p.isProject && p.unitCount && p.unitCount > 1 && (
+            <span className="text-xs px-2.5 py-1 rounded-full font-medium border bg-[#1a2744]/70 text-white border-white/20 backdrop-blur-sm">
+              {p.unitCount} {lang === "es" ? "unidades" : "units"}
+            </span>
+          )}
         </div>
       </div>
 
@@ -285,8 +293,12 @@ function PropertyCard({ p, lang, tx, waLink }: {
           {[p.neighborhood, p.city].filter(Boolean).join(", ")}
         </p>
 
+        {/* Precio: "Desde $X" para proyectos, precio fijo para unidades individuales */}
         <p className="text-xl font-bold text-[#1a2744] mb-4">
-          {price}
+          {p.isProject && p.unitCount && p.unitCount > 1
+            ? <><span className="text-sm font-normal text-gray-400 mr-1">{lang === "es" ? "Desde" : "From"}</span>${(p.fromPrice ?? p.price).toLocaleString("es-EC")}</>
+            : price
+          }
           {p.operation === "rent" && <span className="text-xs font-normal text-gray-400 ml-1">/{lang === "es" ? "mes" : "mo"}</span>}
         </p>
 
