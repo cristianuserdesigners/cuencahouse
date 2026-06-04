@@ -31,9 +31,16 @@ export default async function HomePage() {
     groupMap.get(key)!.push(p);
   }
 
+  // Prioridad de línea para elegir el representante del grupo
+  const linePriority: Record<string, number> = { vip: 0, proyectos: 1, segunda: 2, rentas: 3 };
+
   const properties = Array.from(groupMap.values()).map((group) => {
-    // Usar la propiedad con precio más bajo como representante del grupo
-    const sorted = [...group].sort((a, b) => a.price - b.price);
+    // Ordenar: primero por prioridad de línea, luego por precio mínimo
+    const sorted = [...group].sort((a, b) => {
+      const lp = (linePriority[a.line] ?? 9) - (linePriority[b.line] ?? 9);
+      if (lp !== 0) return lp;
+      return a.price - b.price;
+    });
     const rep = sorted[0];
     return {
       ...rep,
