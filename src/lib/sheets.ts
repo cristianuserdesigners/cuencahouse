@@ -88,10 +88,12 @@ function normalizeOperacion(precio: number): string {
 function normalizeStatus(raw: string): string {
   const r = raw.toLowerCase();
   if (r.includes("disponible") || r.includes("available")) return "available";
-  if (r.includes("construccion") || r.includes("construcción") || r.includes("en obra")) return "reserved";
+  // Construcción = disponible para comprar (preventa/proyecto) — NO reservado
+  if (r.includes("construccion") || r.includes("construcción") || r.includes("en obra") || r.includes("proyecto")) return "available";
   if (r.includes("alquilado") || r.includes("rented")) return "rented";
   if (r.includes("vendido") || r.includes("sold")) return "sold";
-  if (r.includes("contrato") || r.includes("reserv")) return "reserved";
+  // Reservado = alguien puso depósito en una unidad específica
+  if (r.includes("contrato") || r.includes("reserv") || r.includes("bajo contrato")) return "reserved";
   return "available";
 }
 

@@ -16,7 +16,7 @@ export default async function HomePage() {
     .from("properties")
     .select("id, title, type, operation, price, area_m2, bedrooms, bathrooms, neighborhood, city, photos_album_url, cover_photo_url, line, status")
     .eq("workspace_id", WORKSPACE_ID)
-    .in("status", ["available", "reserved"])
+    .eq("status", "available")   // solo disponibles en la web
     .order("line", { ascending: true })
     .order("price", { ascending: true });
 

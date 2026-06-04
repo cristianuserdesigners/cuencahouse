@@ -30,10 +30,12 @@ export default async function PropertiesPage() {
   const { data: properties } = await supabase
     .from("properties")
     .select("*")
+    .not("status", "eq", "sold")       // ocultar vendidas
     .order("created_at", { ascending: false });
 
   const total = properties?.length ?? 0;
   const available = properties?.filter((p) => p.status === "available").length ?? 0;
+  const rented = properties?.filter((p) => p.status === "rented").length ?? 0;
 
   return (
     <div className="p-8 max-w-6xl mx-auto">
@@ -41,7 +43,7 @@ export default async function PropertiesPage() {
         <div>
           <h1 className="text-2xl font-semibold text-gray-900">Propiedades</h1>
           <p className="text-sm text-gray-500 mt-1">
-            {total} en total · {available} disponibles
+            {total} en total · {available} disponibles{rented > 0 ? ` · ${rented} arrendadas` : ""}
           </p>
         </div>
         <div className="flex items-center gap-2">

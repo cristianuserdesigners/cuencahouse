@@ -49,7 +49,7 @@ export default function LandingClient({ properties, heroPhoto }: { properties: P
   const [lang, setLang] = useState<Lang>("es");
   const tx = t[lang];
 
-  const available = properties.filter((p) => ["available", "reserved"].includes(p.status)).slice(0, 6);
+  const available = properties.filter((p) => p.status === "available").slice(0, 6);
 
   return (
     <div className="min-h-screen bg-[#F7F6F2]">
