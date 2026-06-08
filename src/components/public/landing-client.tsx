@@ -251,7 +251,7 @@ function PropertyCard({ p, lang, tx, waLink }: {
     : `Hello, I'm interested in the property: ${p.title} (${price})`;
 
   return (
-    <div className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all hover:-translate-y-1 group">
+    <div className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all hover:-translate-y-1 group" role="article">
       {/* Foto de portada */}
       <div className="h-48 relative overflow-hidden">
         {p.coverPhoto ? (
@@ -285,9 +285,11 @@ function PropertyCard({ p, lang, tx, waLink }: {
       </div>
 
       <div className="p-5">
-        <h3 className="font-semibold text-[#1a2744] mb-1 group-hover:text-[#c9a84c] transition-colors line-clamp-1">
+        <a href={`/propiedades/${p.id}`}>
+          <h3 className="font-semibold text-[#1a2744] mb-1 group-hover:text-[#c9a84c] transition-colors line-clamp-1">
           {p.title}
-        </h3>
+          </h3>
+        </a>
         <p className="text-gray-400 text-xs flex items-center gap-1 mb-3">
           <MapPin className="w-3 h-3" />
           {[p.neighborhood, p.city].filter(Boolean).join(", ")}
