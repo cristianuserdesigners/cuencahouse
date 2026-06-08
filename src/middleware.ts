@@ -30,12 +30,15 @@ export async function middleware(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
 
-  // Rutas públicas: landing, login, webhooks
+  // Rutas públicas: landing, login, webhooks, SEO
   const isPublic =
     pathname === "/" ||
+    pathname === "/sitemap.xml" ||
+    pathname === "/robots.txt" ||
     pathname.startsWith("/propiedades") ||
     pathname.startsWith("/login") ||
-    pathname.startsWith("/api/webhooks");
+    pathname.startsWith("/api/webhooks") ||
+    pathname.startsWith("/api/cron");
 
   if (!session && !isPublic) {
     return NextResponse.redirect(new URL("/login", request.url));
