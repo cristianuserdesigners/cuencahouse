@@ -58,11 +58,11 @@ const ROADMAP: Week[] = [
     theme: "Property Matcher + Web pública",
     status: "pending",
     tasks: [
-      { title: "Property Matcher — cruza perfil calificado con inventario", status: "pending" },
-      { title: "Página pública cuenca.house — landing + cotizador", status: "pending" },
-      { title: "Listado de propiedades público (ES + EN)", status: "pending" },
-      { title: "Dominio cuenca.house → Vercel", status: "pending" },
-      { title: "Eval set — Verónica etiqueta buenas/malas respuestas IA", status: "pending" },
+      { title: "Property Matcher — cruza perfil calificado con inventario", status: "in_progress" },
+      { title: "Página pública cuenca.house — landing + cotizador", status: "done" },
+      { title: "Páginas individuales de propiedades con RealEstateListing schema (GEO/AEO)", status: "done" },
+      { title: "Dominio cuenca.house → Vercel", status: "done" },
+      { title: "Eval set — Verónica etiqueta buenas/malas respuestas IA", status: "done" },
     ],
   },
   {
