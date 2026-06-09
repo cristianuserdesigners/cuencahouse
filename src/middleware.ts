@@ -36,6 +36,9 @@ export async function middleware(request: NextRequest) {
     pathname === "/sitemap.xml" ||
     pathname === "/robots.txt" ||
     pathname.startsWith("/propiedades") ||
+    pathname.startsWith("/privacidad") ||
+    pathname.startsWith("/terminos") ||
+    pathname.startsWith("/eliminar-datos") ||
     pathname.startsWith("/login") ||
     pathname.startsWith("/api/webhooks") ||
     pathname.startsWith("/api/cron");
