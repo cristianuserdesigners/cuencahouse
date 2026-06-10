@@ -128,16 +128,16 @@ export async function fetchSheetTab(
     return -1;
   };
 
-  const iCodigo = idx(["codigo", "cod"]);
-  const iTipo = idx(["tipo"]);
-  const iUbicacion = idx(["ubicacion", "direccion"]);
-  const iPrecio = idx(["precio"]);
-  const iArea = idx(["area (m", "area m", "m²", "m2"]);
-  const iHab = idx(["habitaciones", "hab"]);
-  const iBanos = idx(["banos", "baños"]);
-  const iEstado = idx(["estado"]);
-  const iCaptador = idx(["captador", "agente"]);
-  const iFotos = idx(["album", "fotos", "foto"]);
+  const iCodigo    = idx(["codigo", "cod"]);
+  const iTipo      = idx(["tipo"]);
+  const iUbicacion = idx(["ubicacion", "direccion", "sector"]);  // TERRENOS usa "Sector"
+  const iPrecio    = idx(["precio"]);
+  const iArea      = idx(["area (m", "area m", "m²", "m2", "terreno"]);  // TERRENOS usa "Área de terreno"
+  const iHab       = idx(["habitaciones", "hab"]);
+  const iBanos     = idx(["banos", "baños"]);
+  const iEstado    = idx(["estado"]);
+  const iCaptador  = idx(["captador", "agente"]);
+  const iFotos     = idx(["album", "fotos", "foto"]);
 
   const get = (row: string[], i: number) => (i >= 0 ? (row[i] ?? "").trim() : "");
 
@@ -280,8 +280,14 @@ export async function syncWorkspaceProperties(workspaceId: string): Promise<{
 function buildUpsert(p: SheetProperty, workspaceId: string, line: TabConfig["line"], tabName?: string) {
   const parts = p.ubicacion.split(",").map((s) => s.trim());
   const ciudad = parts[parts.length - 1] || "Cuenca";
-  const sector = parts.length > 1 ? parts[parts.length - 2] : null;
+  const sector = parts.length > 1 ? parts[parts.length - 2] : (p.ubicacion || null);
   const operation = line === "rentas" ? "rent" : normalizeOperacion(p.precio);
+
+  // TERRENOS tab: si no hay tipo en el Sheet, forzar "land"
+  const isTerrenos = tabName?.trim().toUpperCase() === "TERRENOS";
+  if (isTerrenos && !p.tipo) {
+    p = { ...p, tipo: "terreno" };
+  }
 
   // Prefijo con abreviación del nombre de la pestaña para evitar colisiones entre tabs
   const tabPrefix = tabName
