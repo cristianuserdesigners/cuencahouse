@@ -18,8 +18,10 @@ async function buildContextualSystemPrompt(input: QualifierInput): Promise<strin
 
   const supabase = createAdminClient();
 
+  const collected = input.state?.collected ?? {};
+
   // Fetch workspace config + available properties in parallel
-  const [{ data: workspace }, { data: properties }] = await Promise.all([
+  const [{ data: workspace }, { data: allProperties }] = await Promise.all([
     supabase
       .from("workspaces")
       .select("name, agent_name")
@@ -33,11 +35,59 @@ async function buildContextualSystemPrompt(input: QualifierInput): Promise<strin
       .order("price", { ascending: true }),
   ]);
 
+  // Filtrar propiedades según preferencias ya recopiladas del lead
+  let properties = allProperties ?? [];
+
+  // Filtrar por operación (compra vs arriendo)
+  if (collected.intent === "buy" || collected.intent === "invest") {
+    properties = properties.filter((p) => p.operation === "sale" || p.operation === "both");
+  } else if (collected.intent === "rent") {
+    properties = properties.filter((p) => p.operation === "rent" || p.operation === "both");
+  }
+
+  // Filtrar por tipo de propiedad
+  if (collected.property_type) {
+    const typeMap: Record<string, string[]> = {
+      apartment: ["apartment"], house: ["house"],
+      land: ["land"], office: ["office"], commercial: ["commercial"],
+    };
+    const types = typeMap[collected.property_type as string];
+    if (types) properties = properties.filter((p) => types.includes(p.type));
+  }
+
+  // Filtrar por presupuesto con margen del 20%
+  if (collected.budget_max) {
+    const max = Number(collected.budget_max) * 1.2;
+    properties = properties.filter((p) => p.price <= max);
+  }
+  if (collected.budget_min) {
+    const min = Number(collected.budget_min) * 0.8;
+    properties = properties.filter((p) => p.price >= min);
+  }
+
+  // Filtrar por zona (búsqueda parcial en neighborhood/city)
+  if (collected.location_preference && typeof collected.location_preference === "string") {
+    const zone = collected.location_preference.toLowerCase();
+    const zoneFiltered = properties.filter((p) =>
+      p.neighborhood?.toLowerCase().includes(zone) ||
+      p.city?.toLowerCase().includes(zone) ||
+      p.title?.toLowerCase().includes(zone)
+    );
+    // Solo aplicar filtro de zona si hay resultados; sino mostrar todo
+    if (zoneFiltered.length > 0) properties = zoneFiltered;
+  }
+
   return buildSystemPrompt({
     agentName: workspace?.agent_name ?? "Casa",
     workspaceName: workspace?.name ?? "Cuenca House",
-    propertiesJson: properties?.length
+    propertiesJson: properties.length
       ? formatPropertiesForAgent(properties)
+      : allProperties?.length
+        ? formatPropertiesForAgent(allProperties.slice(0, 5))
+        : undefined,
+    totalProperties: allProperties?.length ?? 0,
+    leadData: collected && Object.keys(collected).length > 0
+      ? JSON.stringify(collected, null, 2)
       : undefined,
   });
 }
