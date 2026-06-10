@@ -42,12 +42,20 @@ export default async function HomePage() {
       return a.price - b.price;
     });
     const rep = sorted[0];
+
+    // Es un proyecto real solo si las unidades tienen títulos distintos
+    // (distintos precios o distintas unidades). Si todos tienen el mismo título
+    // es la misma propiedad duplicada en varias pestañas del Sheet.
+    const uniqueTitles = new Set(group.map((p) => p.title.toLowerCase().trim()));
+    const uniquePrices = new Set(group.map((p) => p.price));
+    const isRealProject = group.length > 1 && (uniqueTitles.size > 1 || uniquePrices.size > 1);
+
     return {
       ...rep,
       coverPhoto: rep.cover_photo_url ?? null,
-      unitCount: group.length,               // número de unidades en el proyecto
-      fromPrice: sorted[0].price,            // precio mínimo del grupo
-      isProject: group.length > 1,           // true si hay más de una unidad
+      unitCount: isRealProject ? group.length : 1,
+      fromPrice: sorted[0].price,
+      isProject: isRealProject,
     };
   });
 
