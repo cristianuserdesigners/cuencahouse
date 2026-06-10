@@ -84,6 +84,8 @@ export const t = {
       sub: "Escríbenos ahora — respondemos en menos de 5 minutos",
       button: "Abrir WhatsApp",
       phone: "+593 98 811 4497",
+      email: "ventas@cuenca.house",
+      schedule: "Agendar una cita",
     },
     footer: {
       tagline: "Tu inmobiliaria de confianza en Cuenca, Ecuador.",
@@ -173,6 +175,8 @@ export const t = {
       sub: "Message us now — we respond in under 5 minutes",
       button: "Open WhatsApp",
       phone: "+593 98 811 4497",
+      email: "ventas@cuenca.house",
+      schedule: "Schedule a meeting",
     },
     footer: {
       tagline: "Your trusted real estate agency in Cuenca, Ecuador.",

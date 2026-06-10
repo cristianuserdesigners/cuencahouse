@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { MessageCircle, ChevronDown, MapPin, Bed, Bath, Maximize2, Phone, Building2, ChevronRight } from "lucide-react";
+import { MessageCircle, ChevronDown, MapPin, Bed, Bath, Maximize2, Phone, Building2, ChevronRight, Mail, CalendarDays } from "lucide-react";
 import PublicNav from "./nav";
 import StructuredData, { FAQ_DATA } from "./structured-data";
 import { t, WA_LINK, type Lang } from "@/lib/i18n";
@@ -90,11 +90,16 @@ export default function LandingClient({ properties, heroPhoto }: { properties: P
             {tx.hero.sub}
           </p>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 flex-wrap">
             <a href={WA_LINK[lang]} target="_blank" rel="noopener noreferrer"
               className="flex items-center gap-2.5 bg-[#25D366] text-white font-semibold px-7 py-4 rounded-full text-sm hover:bg-[#1ebe5a] transition-all hover:scale-105 shadow-lg shadow-[#25D366]/30">
               <MessageCircle className="w-5 h-5" />
               {tx.hero.ctaPrimary}
+            </a>
+            <a href="https://calendar.app.google/abwCSWzZSyz3yBNk7" target="_blank" rel="noopener noreferrer"
+              className="flex items-center gap-2 bg-[#1a2744] text-white font-semibold px-7 py-4 rounded-full text-sm hover:bg-[#c9a84c] transition-all hover:scale-105">
+              <CalendarDays className="w-4 h-4" />
+              {tx.cta.schedule}
             </a>
             <a href="#propiedades"
               className="flex items-center gap-2 border border-white/30 text-white/80 font-medium px-7 py-4 rounded-full text-sm hover:bg-white/10 transition-colors">
@@ -186,14 +191,30 @@ export default function LandingClient({ properties, heroPhoto }: { properties: P
           <div className="bg-[#1a2744] rounded-3xl p-10 sm:p-14 shadow-2xl shadow-[#1a2744]/20">
             <h2 className="text-2xl sm:text-3xl font-bold text-white mb-3">{tx.cta.title}</h2>
             <p className="text-white/60 mb-8">{tx.cta.sub}</p>
-            <a href={WA_LINK[lang]} target="_blank" rel="noopener noreferrer"
-              className="inline-flex items-center gap-3 bg-[#25D366] text-white font-bold px-8 py-4 rounded-full text-base hover:bg-[#1ebe5a] transition-all hover:scale-105 shadow-lg shadow-[#25D366]/30 mb-6">
-              <MessageCircle className="w-5 h-5" />
-              {tx.cta.button}
-            </a>
-            <div className="flex items-center justify-center gap-2 text-white/40 text-sm">
-              <Phone className="w-3.5 h-3.5" />
-              {tx.cta.phone}
+
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-8">
+              <a href={WA_LINK[lang]} target="_blank" rel="noopener noreferrer"
+                className="flex items-center gap-2.5 bg-[#25D366] text-white font-bold px-7 py-3.5 rounded-full text-sm hover:bg-[#1ebe5a] transition-all hover:scale-105 shadow-lg shadow-[#25D366]/30">
+                <MessageCircle className="w-4 h-4" />
+                {tx.cta.button}
+              </a>
+              <a href="https://calendar.app.google/abwCSWzZSyz3yBNk7" target="_blank" rel="noopener noreferrer"
+                className="flex items-center gap-2.5 bg-[#c9a84c] text-[#1a2744] font-bold px-7 py-3.5 rounded-full text-sm hover:bg-[#d4b55e] transition-all hover:scale-105">
+                <CalendarDays className="w-4 h-4" />
+                {tx.cta.schedule}
+              </a>
+            </div>
+
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 text-white/40 text-sm">
+              <a href={`tel:${tx.cta.phone.replace(/\s/g,"")}`} className="flex items-center gap-1.5 hover:text-white/60 transition-colors">
+                <Phone className="w-3.5 h-3.5" />
+                {tx.cta.phone}
+              </a>
+              <span className="hidden sm:block text-white/20">·</span>
+              <a href={`mailto:${tx.cta.email}`} className="flex items-center gap-1.5 hover:text-white/60 transition-colors">
+                <Mail className="w-3.5 h-3.5" />
+                {tx.cta.email}
+              </a>
             </div>
           </div>
         </div>
