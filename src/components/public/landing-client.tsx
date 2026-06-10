@@ -15,6 +15,7 @@ type Property = {
   fromPrice?: number;
   isProject?: boolean;
   unitCount?: number;
+  category?: string;
   area_m2: number | null;
   bedrooms: number | null;
   bathrooms: number | null;
@@ -48,11 +49,24 @@ const LINE_LABELS: Record<string, Record<string, string>> = {
   proyectos: { es: "Proyecto", en: "Project" },
 };
 
+const LINE_FILTERS = [
+  { key: "all",      label: { es: "Todos",          en: "All" } },
+  { key: "vip",      label: { es: "Proyectos VIP",  en: "VIP Projects" } },
+  { key: "casas",    label: { es: "Casas",           en: "Houses" } },
+  { key: "terrenos", label: { es: "Terrenos",        en: "Land" } },
+] as const;
+
+type FilterKey = typeof LINE_FILTERS[number]["key"];
+
 export default function LandingClient({ properties, heroPhoto }: { properties: Property[]; heroPhoto?: string | null }) {
   const [lang, setLang] = useState<Lang>("es");
+  const [filter, setFilter] = useState<FilterKey>("all");
   const tx = t[lang];
 
-  const available = properties.filter((p) => p.status === "available");
+  const available = properties
+    .filter((p) => p.status === "available")
+    .filter((p) => filter === "all" || p.category === filter)
+    .sort((a, b) => (a.fromPrice ?? a.price) - (b.fromPrice ?? b.price));
 
   return (
     <div className="min-h-screen bg-[#F7F6F2]">
@@ -134,8 +148,27 @@ export default function LandingClient({ properties, heroPhoto }: { properties: P
             </div>
           </div>
 
+          {/* Filtros de categoría */}
+          <div className="flex flex-wrap gap-2 mb-8">
+            {LINE_FILTERS.map((f) => (
+              <button
+                key={f.key}
+                onClick={() => setFilter(f.key)}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                  filter === f.key
+                    ? "bg-[#1a2744] text-white shadow-sm"
+                    : "bg-white border border-gray-200 text-gray-600 hover:border-[#1a2744]/30 hover:text-[#1a2744]"
+                }`}
+              >
+                {f.label[lang]}
+              </button>
+            ))}
+          </div>
+
           {available.length === 0 ? (
-            <div className="text-center py-16 text-gray-400">{tx.properties.noProperties}</div>
+            <div className="text-center py-16 text-gray-400">
+              <p className="text-sm">{lang === "es" ? "Sin propiedades en esta categoría" : "No properties in this category"}</p>
+            </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {available.map((p) => (

@@ -14,7 +14,7 @@ export default async function HomePage() {
 
   const { data: allProperties } = await supabase
     .from("properties")
-    .select("id, title, type, operation, price, area_m2, bedrooms, bathrooms, neighborhood, city, photos_album_url, cover_photo_url, line, status")
+    .select("id, title, type, operation, price, area_m2, bedrooms, bathrooms, neighborhood, city, photos_album_url, cover_photo_url, line, status, external_code")
     .eq("workspace_id", WORKSPACE_ID)
     .eq("status", "available")   // solo disponibles en la web
     .order("line", { ascending: true })
@@ -50,12 +50,23 @@ export default async function HomePage() {
     const uniquePrices = new Set(group.map((p) => p.price));
     const isRealProject = group.length > 1 && (uniqueTitles.size > 1 || uniquePrices.size > 1);
 
+    // Detectar categoría por prefijo del external_code (más fiable que line)
+    const code = rep.external_code ?? "";
+    const category =
+      rep.line === "vip" ? "vip" :
+      code.startsWith("TERREN-") ? "terrenos" :
+      code.startsWith("CASAS-") ? "casas" :
+      code.startsWith("ARRIEN-") ? "arriendos" :
+      code.startsWith("PROYEC-") ? "vip" :
+      "casas";
+
     return {
       ...rep,
       coverPhoto: rep.cover_photo_url ?? null,
       unitCount: isRealProject ? group.length : 1,
       fromPrice: sorted[0].price,
       isProject: isRealProject,
+      category,
     };
   });
 
