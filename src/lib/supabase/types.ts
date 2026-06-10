@@ -20,6 +20,7 @@ export type Database = {
           last_sheets_sync: string | null;
           whatsapp_phone_id: string | null;
           whatsapp_token: string | null;
+          notification_number: string | null;
           meta_verify_token: string | null;
           working_hours_start: string;
           working_hours_end: string;

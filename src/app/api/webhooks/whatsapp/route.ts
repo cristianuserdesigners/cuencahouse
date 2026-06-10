@@ -208,5 +208,47 @@ export async function POST(req: Request): Promise<Response> {
     console.error("[whatsapp webhook] Failed to send reply:", e);
   }
 
+  // ── 9. Notificación al asesor cuando el lead está calificado ───────────────
+  if (output.action === "qualified" && leadId) {
+    try {
+      const { data: workspace } = await supabase
+        .from("workspaces")
+        .select("notification_number, name")
+        .eq("id", WORKSPACE_ID)
+        .single();
+
+      if (workspace?.notification_number) {
+        const c = output.updated_state.collected;
+        const score = output.score;
+        const scoreEmoji = score >= 70 ? "🔥" : score >= 40 ? "🟡" : "🟢";
+        const urgencyMap: Record<string, string> = {
+          immediate: "Inmediata ⚡", "1_3m": "1-3 meses", "3_6m": "3-6 meses", "6m_plus": "Explorando",
+        };
+
+        const notification = [
+          `${scoreEmoji} *Lead calificado — ${workspace.name}*`,
+          ``,
+          `📱 Contacto: +${inbound.phone}`,
+          c.client_name ? `👤 Nombre: ${c.client_name}` : null,
+          c.intent ? `🎯 Intención: ${c.intent === "buy" ? "Comprar" : c.intent === "rent" ? "Arrendar" : c.intent === "sell" ? "Vender" : c.intent}` : null,
+          c.property_type ? `🏠 Tipo: ${c.property_type}` : null,
+          c.location_preference ? `📍 Zona: ${c.location_preference}` : null,
+          c.budget_min || c.budget_max
+            ? `💰 Presupuesto: ${c.budget_min ? `$${Number(c.budget_min).toLocaleString("es-EC")}` : ""}${c.budget_min && c.budget_max ? " – " : ""}${c.budget_max ? `$${Number(c.budget_max).toLocaleString("es-EC")}` : ""}`
+            : null,
+          c.urgency ? `⏱ Urgencia: ${urgencyMap[c.urgency as string] ?? c.urgency}` : null,
+          `📊 Score: ${score}/100`,
+          ``,
+          `💬 Ver conversación: https://cuencahouse.vercel.app/leads`,
+        ].filter(Boolean).join("\n");
+
+        await sendWhatsAppMessage(workspace.notification_number, notification);
+        console.log(`[notification] Sent to ${workspace.notification_number}`);
+      }
+    } catch (e) {
+      console.error("[notification] Failed:", e);
+    }
+  }
+
   return NextResponse.json({ ok: true });
 }
