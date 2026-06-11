@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Sparkles, Copy, Check, MessageCircle, FileText, Video, Camera } from "lucide-react";
+import { Sparkles, Copy, Check, MessageCircle, FileText, Video, Camera, Palette, ExternalLink } from "lucide-react";
 import type { GeneratedContent } from "@/agents/content/types";
 
 type Property = {
@@ -26,8 +26,35 @@ export default function ContentGenerator({ properties }: { properties: Property[
   const [selectedId, setSelectedId] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const [content, setContent] = useState<GeneratedContent | null>(null);
+  const [canvaUrl, setCanvaUrl] = useState<string | null>(null);
+  const [canvaLoading, setCanvaLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState<CopiedKey>(null);
+
+  async function handleCanva() {
+    if (!selectedId) return;
+    setCanvaLoading(true);
+    setCanvaUrl(null);
+    try {
+      const res = await fetch("/api/agents/canva", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ propertyId: selectedId }),
+      });
+      const data = await res.json();
+      if (data.ok && data.edit_url) {
+        setCanvaUrl(data.edit_url);
+      } else if (data.setup_required) {
+        alert("Canva no está configurado aún. Agrega CANVA_ACCESS_TOKEN en las variables de entorno.");
+      } else {
+        alert(data.error ?? "Error al generar diseño en Canva");
+      }
+    } catch {
+      alert("Error de conexión con Canva");
+    } finally {
+      setCanvaLoading(false);
+    }
+  }
 
   async function handleGenerate() {
     if (!selectedId) return;
@@ -84,7 +111,15 @@ export default function ContentGenerator({ properties }: { properties: Property[
             className="flex items-center gap-2 bg-[#1a2744] text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-[#1a2744]/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
             <Sparkles className={`w-4 h-4 ${loading ? "animate-pulse" : ""}`} />
-            {loading ? "Generando..." : "Generar"}
+            {loading ? "Generando..." : "Generar copy"}
+          </button>
+          <button
+            onClick={handleCanva}
+            disabled={!selectedId || canvaLoading}
+            className="flex items-center gap-2 bg-[#c9a84c] text-[#1a2744] px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-[#d4b55e] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            <Palette className={`w-4 h-4 ${canvaLoading ? "animate-spin" : ""}`} />
+            {canvaLoading ? "Generando arte..." : "Arte en Canva"}
           </button>
         </div>
 
@@ -94,6 +129,25 @@ export default function ContentGenerator({ properties }: { properties: Property[
           </p>
         )}
       </div>
+
+      {canvaUrl && (
+        <div className="flex items-center gap-3 bg-[#c9a84c]/10 border border-[#c9a84c]/30 rounded-xl px-4 py-3">
+          <Palette className="w-5 h-5 text-[#c9a84c] shrink-0" />
+          <div className="flex-1">
+            <p className="text-sm font-medium text-[#1a2744]">¡Diseño listo en Canva!</p>
+            <p className="text-xs text-gray-400">Fotos reales + datos de la propiedad aplicados automáticamente</p>
+          </div>
+          <a
+            href={canvaUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1.5 bg-[#c9a84c] text-[#1a2744] text-xs font-semibold px-3 py-2 rounded-lg hover:bg-[#d4b55e] transition-colors"
+          >
+            Abrir en Canva
+            <ExternalLink className="w-3.5 h-3.5" />
+          </a>
+        </div>
+      )}
 
       {error && (
         <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-600">
