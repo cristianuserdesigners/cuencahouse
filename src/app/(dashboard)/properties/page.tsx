@@ -127,7 +127,6 @@ export default async function PropertiesPage() {
                       href={p.canva_story_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      onClick={e => e.stopPropagation()}
                       className="flex items-center gap-1 text-xs bg-[#c9a84c]/10 text-[#c9a84c] px-2 py-1 rounded-lg hover:bg-[#c9a84c]/20 transition-colors"
                     >
                       <Palette className="w-3 h-3" />
