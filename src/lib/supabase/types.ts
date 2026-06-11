@@ -208,6 +208,7 @@ export type Database = {
           features: string[];
           photos_album_url: string | null;
           cover_photo_url: string | null;
+          canva_story_url: string | null;
           external_code: string | null;
           sheets_row_id: string | null;
           notes: string | null;

@@ -1,6 +1,6 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import Link from "next/link";
-import { Plus, Home, Building2, Layers } from "lucide-react";
+import { Plus, Home, Building2, Layers, Palette } from "lucide-react";
 import SyncButton from "./sync-button";
 
 export const dynamic = "force-dynamic";
@@ -121,9 +121,23 @@ export default async function PropertiesPage() {
                 <span className="text-xs text-gray-400">
                   {OPERATION_LABELS[p.operation] ?? p.operation}
                 </span>
-                {p.external_code && (
-                  <span className="text-xs text-gray-300">#{p.external_code}</span>
-                )}
+                <div className="flex items-center gap-2">
+                  {p.canva_story_url && (
+                    <a
+                      href={p.canva_story_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={e => e.stopPropagation()}
+                      className="flex items-center gap-1 text-xs bg-[#c9a84c]/10 text-[#c9a84c] px-2 py-1 rounded-lg hover:bg-[#c9a84c]/20 transition-colors"
+                    >
+                      <Palette className="w-3 h-3" />
+                      Arte
+                    </a>
+                  )}
+                  {p.external_code && (
+                    <span className="text-xs text-gray-300">#{p.external_code}</span>
+                  )}
+                </div>
               </div>
             </Link>
           ))}
