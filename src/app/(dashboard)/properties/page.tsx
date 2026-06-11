@@ -123,15 +123,9 @@ export default async function PropertiesPage() {
                 </span>
                 <div className="flex items-center gap-2">
                   {p.canva_story_url && (
-                    <a
-                      href={p.canva_story_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-1 text-xs bg-[#c9a84c]/10 text-[#c9a84c] px-2 py-1 rounded-lg hover:bg-[#c9a84c]/20 transition-colors"
-                    >
-                      <Palette className="w-3 h-3" />
-                      Arte
-                    </a>
+                    <span className="text-xs bg-[#c9a84c]/10 text-[#c9a84c] px-2 py-0.5 rounded-full">
+                      ✓ Arte
+                    </span>
                   )}
                   {p.external_code && (
                     <span className="text-xs text-gray-300">#{p.external_code}</span>

@@ -13,6 +13,7 @@ type Property = {
   neighborhood: string | null;
   city: string;
   status: string | null;
+  canva_story_url?: string | null;
 };
 
 const OP_LABELS: Record<string, string> = { sale: "Venta", rent: "Arriendo", both: "V/A" };
@@ -113,14 +114,27 @@ export default function ContentGenerator({ properties }: { properties: Property[
             <Sparkles className={`w-4 h-4 ${loading ? "animate-pulse" : ""}`} />
             {loading ? "Generando..." : "Generar copy"}
           </button>
-          <button
-            onClick={handleCanva}
-            disabled={!selectedId || canvaLoading}
-            className="flex items-center gap-2 bg-[#c9a84c] text-[#1a2744] px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-[#d4b55e] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            <Palette className={`w-4 h-4 ${canvaLoading ? "animate-spin" : ""}`} />
-            {canvaLoading ? "Generando arte..." : "Arte en Canva"}
-          </button>
+          {selected?.canva_story_url ? (
+            <a
+              href={selected.canva_story_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 bg-[#c9a84c] text-[#1a2744] px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-[#d4b55e] transition-colors"
+            >
+              <Palette className="w-4 h-4" />
+              Abrir arte en Canva
+              <ExternalLink className="w-3.5 h-3.5" />
+            </a>
+          ) : (
+            <button
+              onClick={handleCanva}
+              disabled={!selectedId || canvaLoading}
+              className="flex items-center gap-2 bg-[#c9a84c] text-[#1a2744] px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-[#d4b55e] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              <Palette className={`w-4 h-4 ${canvaLoading ? "animate-spin" : ""}`} />
+              {canvaLoading ? "Generando arte..." : "Arte en Canva"}
+            </button>
+          )}
         </div>
 
         {selected && (

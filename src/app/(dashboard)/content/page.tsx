@@ -7,7 +7,7 @@ export default async function ContentPage() {
   const supabase = createAdminClient();
   const { data: properties } = await supabase
     .from("properties")
-    .select("id, title, type, operation, price, neighborhood, city, status")
+    .select("id, title, type, operation, price, neighborhood, city, status, canva_story_url")
     .order("created_at", { ascending: false });
 
   return (
