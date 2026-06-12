@@ -4,12 +4,6 @@ import { createAdminClient } from "@/lib/supabase/admin";
 const WORKSPACE_ID = "9a67ad1f-2b8d-455a-bcd1-e49eb7e57951";
 const SITE_URL = "https://cuencahouse.vercel.app";
 
-function csvEscape(value: string | number | null | undefined): string {
-  if (value == null) return '""';
-  const str = String(value).replace(/"/g, '""');
-  return `"${str}"`;
-}
-
 function buildDescription(p: {
   title: string;
   description: string | null;
@@ -35,16 +29,65 @@ function buildDescription(p: {
   return parts.join(" ");
 }
 
-const CSV_HEADERS = [
-  "id", "title", "description", "availability", "condition",
-  "price", "link", "image_link", "brand", "google_product_category", "product_type",
-];
+// Formato home_listings para catálogos de tipo Real Estate en Meta
+function toHomeListing(p: {
+  id: string;
+  external_code: string | null;
+  title: string;
+  description: string | null;
+  ai_description: string | null;
+  type: string;
+  operation: string;
+  line: string;
+  price: number;
+  area_m2: number | null;
+  bedrooms: number | null;
+  bathrooms: number | null;
+  address: string | null;
+  neighborhood: string | null;
+  city: string;
+  cover_photo_url: string | null;
+}) {
+  const propertyTypeMap: Record<string, string> = {
+    apartment: "apartment", house: "house", land: "land",
+    office: "other", commercial: "other",
+  };
+  const listingTypeMap: Record<string, string> = {
+    sale: "for_sale_by_agent", rent: "for_rent_by_agent",
+  };
+  const isNewConstruction = p.line === "vip" || p.line === "proyectos";
+
+  const listing: Record<string, unknown> = {
+    home_listing_id: p.external_code ?? p.id,
+    name: p.title,
+    availability: p.operation === "rent" ? "for_rent" : "for_sale",
+    description: buildDescription(p),
+    address: {
+      addr1: p.address ?? p.neighborhood ?? p.city,
+      city: p.city,
+      region: "Azuay",
+      country: "EC",
+      postal_code: "",
+    },
+    price: `${p.price} USD`,
+    url: `${SITE_URL}/propiedades/${p.id}`,
+    property_type: propertyTypeMap[p.type] ?? "other",
+    listing_type: isNewConstruction ? "new_construction" : (listingTypeMap[p.operation] ?? "for_sale_by_agent"),
+  };
+
+  if (p.cover_photo_url) listing.images = [{ url: p.cover_photo_url }];
+  if (p.bedrooms != null) listing.num_beds = p.bedrooms;
+  if (p.bathrooms != null) listing.num_baths = p.bathrooms;
+  if (p.area_m2 != null) { listing.area_size = p.area_m2; listing.area_size_unit = "sq_m"; }
+
+  return listing;
+}
 
 export async function GET(req: NextRequest): Promise<Response> {
   const token = req.nextUrl.searchParams.get("token");
   const expectedToken = process.env.META_CATALOG_TOKEN;
   if (expectedToken && token !== expectedToken) {
-    return new Response("Unauthorized", { status: 401 });
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
@@ -52,9 +95,7 @@ export async function GET(req: NextRequest): Promise<Response> {
 
     const { data: properties, error } = await supabase
       .from("properties")
-      .select(
-        "id, external_code, title, description, ai_description, type, operation, line, price, area_m2, bedrooms, bathrooms, address, neighborhood, city, cover_photo_url"
-      )
+      .select("id, external_code, title, description, ai_description, type, operation, line, price, area_m2, bedrooms, bathrooms, address, neighborhood, city, cover_photo_url")
       .eq("workspace_id", WORKSPACE_ID)
       .eq("status", "available")
       .not("price", "is", null)
@@ -63,38 +104,17 @@ export async function GET(req: NextRequest): Promise<Response> {
 
     if (error) throw error;
 
-    const typeLabel: Record<string, string> = {
-      apartment: "Departamento", house: "Casa", land: "Terreno",
-      office: "Oficina", commercial: "Local Comercial",
-    };
+    const listings = (properties ?? []).map(toHomeListing);
 
-    const rows = (properties ?? []).map((p) => {
-      const condition = (p.line === "vip" || p.line === "proyectos") ? "new" : "used";
-      return [
-        csvEscape(p.external_code ?? p.id),
-        csvEscape(p.title),
-        csvEscape(buildDescription(p)),
-        csvEscape("in stock"),
-        csvEscape(condition),
-        csvEscape(`${p.price}.00 USD`),
-        csvEscape(`${SITE_URL}/propiedades/${p.id}`),
-        csvEscape(p.cover_photo_url ?? ""),
-        csvEscape("Cuenca House"),
-        csvEscape("Real Estate > Residential Properties"),
-        csvEscape(typeLabel[p.type] ?? p.type),
-      ].join(",");
-    });
-
-    const csv = [CSV_HEADERS.join(","), ...rows].join("\n");
-
-    return new Response(csv, {
-      headers: {
-        "Content-Type": "text/csv; charset=utf-8",
+    return NextResponse.json(
+      { data: listings },
+      { headers: {
+        "Content-Type": "application/json",
         "Cache-Control": "public, max-age=3600, stale-while-revalidate=86400",
-      },
-    });
+      }}
+    );
   } catch (e) {
     console.error("[meta-catalog] Error:", e);
-    return new Response("Internal server error", { status: 500 });
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
