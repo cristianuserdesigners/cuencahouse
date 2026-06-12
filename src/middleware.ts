@@ -41,7 +41,8 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith("/eliminar-datos") ||
     pathname.startsWith("/login") ||
     pathname.startsWith("/api/webhooks") ||
-    pathname.startsWith("/api/cron");
+    pathname.startsWith("/api/cron") ||
+    pathname.startsWith("/api/meta-catalog");
 
   if (!session && !isPublic) {
     return NextResponse.redirect(new URL("/login", request.url));
