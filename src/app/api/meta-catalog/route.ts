@@ -4,35 +4,6 @@ import { createAdminClient } from "@/lib/supabase/admin";
 const WORKSPACE_ID = "9a67ad1f-2b8d-455a-bcd1-e49eb7e57951";
 const SITE_URL = "https://cuencahouse.vercel.app";
 
-type MetaAvailability = "for_sale" | "for_rent";
-type MetaPropertyType = "apartment" | "condo" | "house" | "land" | "manufactured" | "other";
-type MetaListingType =
-  | "for_sale_by_agent"
-  | "for_sale_by_owner"
-  | "new_construction"
-  | "for_rent_by_agent";
-
-function toMetaAvailability(operation: string): MetaAvailability {
-  return operation === "rent" ? "for_rent" : "for_sale";
-}
-
-function toMetaPropertyType(type: string): MetaPropertyType {
-  const map: Record<string, MetaPropertyType> = {
-    apartment: "apartment",
-    house: "house",
-    land: "land",
-    office: "other",
-    commercial: "other",
-  };
-  return map[type] ?? "other";
-}
-
-function toMetaListingType(operation: string, line: string): MetaListingType {
-  if (operation === "rent") return "for_rent_by_agent";
-  if (line === "vip" || line === "proyectos") return "new_construction";
-  return "for_sale_by_agent";
-}
-
 function buildDescription(p: {
   title: string;
   description: string | null;
@@ -59,8 +30,53 @@ function buildDescription(p: {
   return parts.join(" ");
 }
 
+// Formato estándar de Meta para catálogos genéricos (CSV/JSON feed)
+// https://www.facebook.com/business/help/120325381656392
+function toMetaProduct(p: {
+  id: string;
+  external_code: string | null;
+  title: string;
+  description: string | null;
+  ai_description: string | null;
+  type: string;
+  operation: string;
+  line: string;
+  price: number;
+  area_m2: number | null;
+  bedrooms: number | null;
+  bathrooms: number | null;
+  address: string | null;
+  neighborhood: string | null;
+  city: string;
+  cover_photo_url: string | null;
+}) {
+  const typeLabel: Record<string, string> = {
+    apartment: "Departamento", house: "Casa", land: "Terreno",
+    office: "Oficina", commercial: "Local Comercial",
+  };
+  const condition = (p.line === "vip" || p.line === "proyectos") ? "new" : "used";
+
+  const product: Record<string, string | number> = {
+    id: p.external_code ?? p.id,
+    title: p.title,
+    description: buildDescription(p),
+    availability: "in stock",
+    condition,
+    price: `${p.price}.00 USD`,
+    link: `${SITE_URL}/propiedades/${p.id}`,
+    brand: "Cuenca House",
+    google_product_category: "Real Estate > Residential Properties",
+    product_type: typeLabel[p.type] ?? p.type,
+  };
+
+  if (p.cover_photo_url) {
+    product.image_link = p.cover_photo_url;
+  }
+
+  return product;
+}
+
 export async function GET(req: NextRequest): Promise<Response> {
-  // Verificar token de acceso — protege el feed de acceso público no autorizado
   const token = req.nextUrl.searchParams.get("token");
   const expectedToken = process.env.META_CATALOG_TOKEN;
   if (expectedToken && token !== expectedToken) {
@@ -83,52 +99,16 @@ export async function GET(req: NextRequest): Promise<Response> {
 
     if (error) throw error;
 
-    const listings = (properties ?? []).map((p) => {
-      const listing: Record<string, unknown> = {
-        home_listing_id: p.external_code ?? p.id,
-        name: p.title,
-        availability: toMetaAvailability(p.operation),
-        description: buildDescription(p),
-        address: {
-          addr1: p.address ?? p.neighborhood ?? p.city,
-          city: p.city,
-          region: "Azuay",
-          country: "EC",
-          postal_code: "",
-        },
-        price: `${p.price} USD`,
-        url: `${SITE_URL}/propiedades/${p.id}`,
-        property_type: toMetaPropertyType(p.type),
-        listing_type: toMetaListingType(p.operation, p.line),
-      };
+    const products = (properties ?? []).map(toMetaProduct);
 
-      if (p.cover_photo_url) {
-        listing.images = [{ url: p.cover_photo_url }];
-      }
-      if (p.bedrooms != null) listing.num_beds = p.bedrooms;
-      if (p.bathrooms != null) listing.num_baths = p.bathrooms;
-      if (p.area_m2 != null) {
-        listing.area_size = p.area_m2;
-        listing.area_size_unit = "sq_m";
-      }
-
-      return listing;
+    return NextResponse.json(products, {
+      headers: {
+        "Content-Type": "application/json",
+        "Cache-Control": "public, max-age=3600, stale-while-revalidate=86400",
+      },
     });
-
-    return NextResponse.json(
-      { data: listings },
-      {
-        headers: {
-          "Content-Type": "application/json",
-          "Cache-Control": "public, max-age=3600, stale-while-revalidate=86400",
-        },
-      }
-    );
   } catch (e) {
     console.error("[meta-catalog] Error:", e);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
