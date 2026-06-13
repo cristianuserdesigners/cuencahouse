@@ -42,6 +42,18 @@ const LINE_STYLES: Record<string, string> = {
   proyectos: "bg-purple-50 text-purple-700 border-purple-200",
 };
 
+const STATUS_STYLES: Record<string, string> = {
+  new: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  construction: "bg-amber-50 text-amber-700 border-amber-200",
+  used: "bg-slate-100 text-slate-600 border-slate-200",
+};
+
+const STATUS_LABELS: Record<string, Record<string, string>> = {
+  new: { es: "Por estrenar", en: "Brand new" },
+  construction: { es: "En construcción", en: "Under construction" },
+  used: { es: "Segunda mano", en: "Second-hand" },
+};
+
 const LINE_LABELS: Record<string, Record<string, string>> = {
   vip: { es: "VIP", en: "VIP" },
   segunda: { es: "Segunda mano", en: "Resale" },
@@ -63,8 +75,9 @@ export default function LandingClient({ properties, heroPhoto }: { properties: P
   const [filter, setFilter] = useState<FilterKey>("all");
   const tx = t[lang];
 
+  const VISIBLE_STATUSES = ["available", "new", "construction", "used"];
   const available = properties
-    .filter((p) => p.status === "available")
+    .filter((p) => VISIBLE_STATUSES.includes(p.status))
     .filter((p) => filter === "all" || p.category === filter)
     .sort((a, b) => (a.fromPrice ?? a.price) - (b.fromPrice ?? b.price));
 
@@ -296,6 +309,8 @@ function PropertyCard({ p, lang, tx, waLink }: {
   const typeLabel = TYPE_LABELS[p.type]?.[lang] ?? p.type;
   const lineStyle = LINE_STYLES[p.line] ?? "bg-gray-50 text-gray-600 border-gray-200";
   const lineLabel = LINE_LABELS[p.line]?.[lang] ?? p.line;
+  const statusStyle = STATUS_STYLES[p.status];
+  const statusLabel = STATUS_LABELS[p.status]?.[lang];
   const price = p.operation === "rent"
     ? `$${p.price.toLocaleString("es-EC")}/mes`
     : `$${p.price.toLocaleString("es-EC")}`;
@@ -325,11 +340,16 @@ function PropertyCard({ p, lang, tx, waLink }: {
             📸 {lang === "es" ? "Ver fotos" : "View photos"}
           </a>
         )}
-        {/* Badges: línea + unidades del proyecto */}
-        <div className="absolute top-3 left-3 flex gap-1.5">
+        {/* Badges: línea + estado + unidades del proyecto */}
+        <div className="absolute top-3 left-3 flex flex-wrap gap-1.5">
           <span className={`text-xs px-2.5 py-1 rounded-full font-medium border backdrop-blur-sm ${lineStyle}`}>
             {lineLabel}
           </span>
+          {statusLabel && statusStyle && (
+            <span className={`text-xs px-2.5 py-1 rounded-full font-medium border backdrop-blur-sm ${statusStyle}`}>
+              {statusLabel}
+            </span>
+          )}
           {p.isProject && p.unitCount && p.unitCount > 1 && (
             <span className="text-xs px-2.5 py-1 rounded-full font-medium border bg-[#1a2744]/70 text-white border-white/20 backdrop-blur-sm">
               {p.unitCount} {lang === "es" ? "unidades" : "units"}

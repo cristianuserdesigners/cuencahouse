@@ -16,6 +16,16 @@ const TYPE_LABELS: Record<string, string> = {
 const LINE_LABELS: Record<string, string> = {
   vip: "Proyecto VIP", segunda: "Segunda mano", rentas: "Arriendo", proyectos: "Proyecto",
 };
+const STATUS_LABELS: Record<string, string> = {
+  new: "Por estrenar",
+  construction: "En construcción",
+  used: "Segunda mano",
+};
+const STATUS_STYLES: Record<string, string> = {
+  new: "bg-emerald-500/80",
+  construction: "bg-amber-500/80",
+  used: "bg-slate-500/80",
+};
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -55,7 +65,7 @@ export default async function PropertyPage({ params }: Props) {
     .select("*")
     .eq("id", id)
     .eq("workspace_id", WORKSPACE_ID)
-    .eq("status", "available")
+    .in("status", ["available", "new", "construction", "used"])
     .single();
 
   if (!p) notFound();
@@ -143,10 +153,15 @@ export default async function PropertyPage({ params }: Props) {
             </div>
           )}
           {/* Badges */}
-          <div className="absolute top-4 left-4 flex gap-2">
+          <div className="absolute top-4 left-4 flex flex-wrap gap-2">
             <span className="bg-[#c9a84c]/90 text-white text-xs font-semibold px-3 py-1.5 rounded-full backdrop-blur-sm">
               {LINE_LABELS[p.line] ?? p.line}
             </span>
+            {STATUS_LABELS[p.status] && (
+              <span className={`${STATUS_STYLES[p.status] ?? "bg-gray-500/80"} text-white text-xs font-semibold px-3 py-1.5 rounded-full backdrop-blur-sm`}>
+                {STATUS_LABELS[p.status]}
+              </span>
+            )}
             {p.external_code && (
               <span className="bg-black/40 text-white/80 text-xs px-3 py-1.5 rounded-full backdrop-blur-sm">
                 #{p.external_code}

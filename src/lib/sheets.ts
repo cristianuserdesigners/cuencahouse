@@ -14,6 +14,7 @@ import { getFirstPhotoFromAlbum } from "@/lib/photos";
 export type SheetProperty = {
   codigo: string;
   tipo: string;
+  subtipo: string | null;
   ubicacion: string;
   precio: number;
   area_m2: number | null;
@@ -72,12 +73,13 @@ function normalizeArea(raw: string): number | null {
 }
 
 function normalizeTipo(raw: string): string {
-  const map: Record<string, string> = {
-    casa: "house", departamento: "apartment", depto: "apartment",
-    terreno: "land", oficina: "office", local: "commercial",
-    "local comercial": "commercial",
-  };
-  return map[raw.toLowerCase().trim()] ?? "apartment";
+  const r = raw.toLowerCase().trim();
+  if (r.includes("departamento") || r.includes("depto") || r.includes("apartment")) return "apartment";
+  if (r.includes("terreno") || r.includes("land")) return "land";
+  if (r.includes("oficina") || r.includes("office")) return "office";
+  if (r.includes("local comercial") || r.includes("commercial")) return "commercial";
+  // "casa", "house", o cualquier tipo VIP que llegue aquí → house
+  return "house";
 }
 
 function normalizeOperacion(precio: number): string {
@@ -86,13 +88,13 @@ function normalizeOperacion(precio: number): string {
 }
 
 function normalizeStatus(raw: string): string {
-  const r = raw.toLowerCase();
+  const r = raw.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+  if (r.includes("por estrenar") || r.includes("estrenar")) return "new";
+  if (r.includes("usada") || r.includes("usado") || r.includes("segunda mano")) return "used";
+  if (r.includes("construccion") || r.includes("en obra") || r.includes("proyecto")) return "construction";
   if (r.includes("disponible") || r.includes("available")) return "available";
-  // Construcción = disponible para comprar (preventa/proyecto) — NO reservado
-  if (r.includes("construccion") || r.includes("construcción") || r.includes("en obra") || r.includes("proyecto")) return "available";
   if (r.includes("alquilado") || r.includes("rented")) return "rented";
-  if (r.includes("vendido") || r.includes("sold")) return "sold";
-  // Reservado = alguien puso depósito en una unidad específica
+  if (r.includes("vendida") || r.includes("vendido") || r.includes("sold")) return "sold";
   if (r.includes("contrato") || r.includes("reserv") || r.includes("bajo contrato")) return "reserved";
   return "available";
 }
@@ -130,9 +132,12 @@ export async function fetchSheetTab(
 
   const iCodigo    = idx(["codigo", "cod"]);
   const iTipo      = idx(["tipo"]);
+  // VIP tiene columna "Casa / Departamento" con el tipo real; "Tipo" pasa a ser subtipo
+  const iSubtipo   = idx(["casa / departamento", "casa/departamento"]);
   const iUbicacion = idx(["ubicacion", "direccion", "sector"]);  // TERRENOS usa "Sector"
   const iPrecio    = idx(["precio"]);
-  const iArea      = idx(["area (m", "area m", "m²", "m2", "terreno"]);  // TERRENOS usa "Área de terreno"
+  // VIP usa "# Área de construcción"; Casas usa "Área (m²)"; TERRENOS usa "Área de terreno"
+  const iArea      = idx(["area (m", "area m", "construccion", "m²", "m2", "terreno"]);
   const iHab       = idx(["habitaciones", "hab"]);
   const iBanos     = idx(["banos", "baños"]);
   const iEstado    = idx(["estado"]);
@@ -146,7 +151,9 @@ export async function fetchSheetTab(
     .filter((row) => row.some((c) => c?.trim()))
     .map((row, rowIdx) => ({
       codigo: get(row, iCodigo) || `ROW-${rowIdx + 2}`,
-      tipo: get(row, iTipo),
+      // Si existe columna "Casa / Departamento", es el tipo real; "Tipo" pasa a subtipo
+      tipo: iSubtipo >= 0 ? get(row, iSubtipo) : get(row, iTipo),
+      subtipo: iSubtipo >= 0 ? get(row, iTipo) : null,
       ubicacion: get(row, iUbicacion),
       precio: parsePrecio(get(row, iPrecio)),
       area_m2: normalizeArea(get(row, iArea)),
@@ -295,6 +302,11 @@ function buildUpsert(p: SheetProperty, workspaceId: string, line: TabConfig["lin
     : null;
   const externalCode = tabPrefix ? `${tabPrefix}-${p.codigo}` : p.codigo;
 
+  const notesParts = [
+    p.captador ? `Captador: ${p.captador}` : null,
+    p.subtipo ? `Subtipo: ${p.subtipo}` : null,
+  ].filter(Boolean);
+
   return {
     cover_photo_url: null as string | null, // se llena en post-sync
     workspace_id: workspaceId,
@@ -313,7 +325,7 @@ function buildUpsert(p: SheetProperty, workspaceId: string, line: TabConfig["lin
     city: ciudad,
     photos_album_url: p.fotos_url || null,
     description: null,
-    notes: p.captador ? `Captador: ${p.captador}` : null,
+    notes: notesParts.length ? notesParts.join(" · ") : null,
     features: [] as string[],
     synced_at: new Date().toISOString(),
   };

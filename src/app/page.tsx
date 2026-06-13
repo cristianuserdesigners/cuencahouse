@@ -12,11 +12,13 @@ const WORKSPACE_ID = "9a67ad1f-2b8d-455a-bcd1-e49eb7e57951";
 export default async function HomePage() {
   const supabase = createAdminClient();
 
+  const VISIBLE_STATUSES = ["available", "new", "construction", "used"];
+
   const { data: allProperties } = await supabase
     .from("properties")
     .select("id, title, type, operation, price, area_m2, bedrooms, bathrooms, neighborhood, city, photos_album_url, cover_photo_url, line, status, external_code")
     .eq("workspace_id", WORKSPACE_ID)
-    .eq("status", "available")   // solo disponibles en la web
+    .in("status", VISIBLE_STATUSES)
     .order("line", { ascending: true })
     .order("price", { ascending: true });
 
