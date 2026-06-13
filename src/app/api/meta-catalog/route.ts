@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 const WORKSPACE_ID = "9a67ad1f-2b8d-455a-bcd1-e49eb7e57951";
-const SITE_URL = "https://cuencahouse.vercel.app";
+const SITE_URL = "https://cuenca.house";
 
 function buildDescription(p: {
   title: string;
@@ -39,6 +39,7 @@ function toHomeListing(p: {
   type: string;
   operation: string;
   line: string;
+  status: string;
   price: number;
   area_m2: number | null;
   bedrooms: number | null;
@@ -55,7 +56,7 @@ function toHomeListing(p: {
   const listingTypeMap: Record<string, string> = {
     sale: "for_sale_by_agent", rent: "for_rent_by_agent",
   };
-  const isNewConstruction = p.line === "vip" || p.line === "proyectos";
+  const isNewConstruction = p.line === "vip" || p.line === "proyectos" || p.status === "construction" || p.status === "new";
 
   const listing: Record<string, unknown> = {
     home_listing_id: p.external_code ?? p.id,
@@ -95,9 +96,9 @@ export async function GET(req: NextRequest): Promise<Response> {
 
     const { data: properties, error } = await supabase
       .from("properties")
-      .select("id, external_code, title, description, ai_description, type, operation, line, price, area_m2, bedrooms, bathrooms, address, neighborhood, city, cover_photo_url")
+      .select("id, external_code, title, description, ai_description, type, operation, line, status, price, area_m2, bedrooms, bathrooms, address, neighborhood, city, cover_photo_url")
       .eq("workspace_id", WORKSPACE_ID)
-      .eq("status", "available")
+      .in("status", ["available", "new", "construction", "used"])
       .not("price", "is", null)
       .gt("price", 0)
       .order("created_at", { ascending: false });
