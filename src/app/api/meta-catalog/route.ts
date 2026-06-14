@@ -48,18 +48,19 @@ function csvEscape(val: string | number | null | undefined): string {
 }
 
 const CSV_HEADERS = [
-  "home_listing_id",
-  "name",
+  "id",
+  "title",
   "availability",
   "description",
   "price",
   "listing_type",
   "property_type",
+  "condition",
   "num_beds",
   "num_baths",
   "area_size",
   "area_size_unit",
-  "images[0][url]",
+  "image[0][url]",
   "url",
   "address[addr1]",
   "address[city]",
@@ -79,6 +80,8 @@ function toCSVRow(p: Property): string {
     ? "new_construction"
     : p.operation === "rent" ? "for_rent_by_agent" : "for_sale_by_agent";
 
+  const condition = (p.status === "used") ? "used" : "new";
+
   const values = [
     p.external_code ?? p.id,
     p.title,
@@ -87,6 +90,7 @@ function toCSVRow(p: Property): string {
     `${p.price} USD`,
     listingType,
     propertyTypeMap[p.type] ?? "other",
+    condition,
     p.bedrooms ?? "",
     p.bathrooms ?? "",
     p.area_m2 ?? "",
