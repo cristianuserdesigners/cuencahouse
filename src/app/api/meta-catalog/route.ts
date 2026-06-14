@@ -85,7 +85,7 @@ function toCSVRow(p: Property): string {
   const values = [
     p.external_code ?? p.id,
     p.title,
-    p.operation === "rent" ? "for_rent" : "for_sale",
+    "in stock",
     buildDescription(p),
     `${p.price} USD`,
     listingType,
